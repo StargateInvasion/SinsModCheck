@@ -217,6 +217,7 @@ for filename in glob.glob(os.path.join(path, '*')):
 
 texturelist.sort()
 i = 0
+print "** Textures Not Referenced **"
 for tex in textures2:
 	ext = os.path.splitext(tex)
 	test = False
@@ -241,6 +242,7 @@ for tex in textures2:
 
 
 i = 0
+print "** Referenced Non-existant Textures **"
 for tex in texturelist:
 	extension = os.path.splitext(tex)
 	test = False
@@ -250,7 +252,7 @@ for tex in texturelist:
 				test = True
 				break
 		if not test:
-			print '"' + tex + '"' + ' listed in "' + str(filenamelist[i]) + '" does not appear to exist in Textures.\n'
+			print '\t"' + tex + '"' + ' listed in "' + str(filenamelist[i]) + '" does not appear to exist in Textures.'
 	else:
 		for file in textures2:
 			file = os.path.splitext(file)[0]
@@ -258,14 +260,14 @@ for tex in texturelist:
 				test = True
 				break
 		if not test:
-			print '"' + tex + '"' + ' listed in "' + str(filenamelist[i]) + '" does not appear to exist in Textures.\n'
+			print '\t"' + tex + '"' + ' listed in "' + str(filenamelist[i]) + '" does not appear to exist in Textures.'
 	i = i + 1
 
 i = 0
-
+print "** Referenced Non-existant String **"
 for string in stringlist:
 	if not string in stringids:
-		print '"' + string + '"' + ' listed in "' + str(filenamelist2[i]) + '" does not appear to exist in English.str.\n'
+		print '\t"' + string + '"' + ' listed in "' + str(filenamelist2[i]) + '" does not appear to exist in English.str.'
 	i = i + 1
 
 
