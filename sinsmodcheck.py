@@ -4,7 +4,7 @@
 import os
 import glob
 import sys
-version = '1.0'
+version = '1.0.1'
 
 if len(sys.argv) > 1:
 	rootpath = sys.argv[1]
