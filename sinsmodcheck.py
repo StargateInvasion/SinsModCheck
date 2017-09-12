@@ -9,7 +9,7 @@ version = '1.0'
 if len(sys.argv) > 1:
 	rootpath = sys.argv[1]
 else:
-	print "\tUsage: simsmodcheck.py <outputdirectory>"
+	print "\tUsage: simsmodcheck.py <moddirectory>"
 	sys.exit()
 
 print "\n***** Sins of Solar Empire Mod File Verifcation " + version + " *****"
