@@ -106,6 +106,11 @@ for filename in glob.glob(os.path.join(path, '*')):
 			if brushfilename != "" and not brushfilename in texturelist:
 	   			texturelist.append(brushfilename)
 	   			filenamelist.append(filename)
+	   	if "textureAnimationName " in line:
+			brushfilename = line.replace('textureAnimationName', "").replace('"', "").strip()
+			if brushfilename != "" and not brushfilename in texturelist:
+	   			texturelist.append(brushfilename)
+	   			filenamelist.append(filename)
 
 
 print "** Reviewing String Counts **"
