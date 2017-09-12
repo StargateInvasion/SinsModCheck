@@ -1,5 +1,5 @@
 #The MIT License (MIT)
-#Copyright (c) 2017 Jeff G.
+#Copyright (c) 2017 Stargate Invasion
 
 import os
 import glob
