@@ -4,7 +4,7 @@
 import os
 import glob
 import sys
-version = '1.0.1'
+version = '1.1'
 
 if len(sys.argv) > 1:
 	rootpath = sys.argv[1]
@@ -16,10 +16,7 @@ print "\n***** Sins of Solar Empire Mod File Verifcation " + version + " *****"
 
 texturelist = []
 meshlist = []
-filenamelist = []
 stringlist = []
-filenamelist2 = []
-meshfiles = []
 meshfilenamelist = []
 
 print "** Reviewing Brush Counts **"
@@ -34,14 +31,12 @@ for filename in glob.glob(os.path.join(path, '*')):
    			i = i + 1
    		if 'fileName ' in line:
    			brushfilename = line.replace('fileName', "").replace('"', "").strip()
-   			if brushfilename != "" and not brushfilename in texturelist:
-   				texturelist.append(brushfilename)
-   				filenamelist.append(filename)
+   			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+   				texturelist.append([brushfilename, filename])
    		elif 'textureName ' in line:
    			brushfilename = line.replace('textureName', "").replace('"', "").strip()
-   			if brushfilename != "" and not brushfilename in texturelist:
-   				texturelist.append(brushfilename)
-   				filenamelist.append(filename)
+   			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+   				texturelist.append([brushfilename, filename])
 
    	if i !=0 and itemCount != i:
    		print "\t" + filename
@@ -52,53 +47,44 @@ for filename in glob.glob(os.path.join(path, '*')):
 	for line in open(filename):
 		if "browsePictureName " in line:
 			brushfilename = line.replace('browsePictureName', "").replace('"', "").strip()
-			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+	   			texturelist.append([brushfilename, filename])
 
 path =  os.path.join(rootpath, 'GameInfo')
 for filename in glob.glob(os.path.join(path, '*')):
 	for line in open(filename):
 		if "environmentMapName " in line:
 			brushfilename = line.replace('environmentMapName', "").replace('"', "").strip()
-			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+	   			texturelist.append([brushfilename, filename])
 	   	elif "environmentIlluminationMapName " in line:
 			brushfilename = line.replace('environmentIlluminationMapName', "").replace('"', "").strip()
-			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+	   			texturelist.append([brushfilename, filename])
 	   	elif "beamGlowTextureName " in line:
 			brushfilename = line.replace('beamGlowTextureName', "").replace('"', "").strip()
 			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+	   			texturelist.append([brushfilename, filename])
 	   	elif "beamCoreTextureName " in line:
 			brushfilename = line.replace('beamCoreTextureName', "").replace('"', "").strip()
-			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+	   			texturelist.append([brushfilename, filename])
 	   	elif "textureName " in line:
 			brushfilename = line.replace('textureName', "").replace('"', "").strip()
-			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+	   			texturelist.append([brushfilename, filename])
 	   	elif "textureName " in line:
 			brushfilename = line.replace('textureName', "").replace('"', "").strip()
-			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+	   			texturelist.append([brushfilename, filename])
 	   	elif 'nameStringID ' in line:
    			stringname = line.replace('nameStringID', "").replace('"', "").strip()
-   			if stringname != "" and not stringname in stringlist:
-   				stringlist.append(stringname)
-   				filenamelist2.append(filename)	
+   			if stringname != "" and not [stringname, filename] in stringlist:
+   				stringlist.append([stringname, filename])
    		elif 'descStringID ' in line:
    			stringname = line.replace('descStringID', "").replace('"', "").strip()
-   			if stringname != "" and not stringname in stringlist:
-   				stringlist.append(stringname)
-   				filenamelist2.append(filename)
+   			if stringname != "" and not [stringname, filename] in stringlist:
+   				stringlist.append([stringname, filename])
 
 
 path =  os.path.join(rootpath, 'Particle')
@@ -106,20 +92,16 @@ for filename in glob.glob(os.path.join(path, '*')):
 	for line in open(filename):
 		if "textureName " in line:
 			brushfilename = line.replace('textureName', "").replace('"', "").strip()
-			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+	   			texturelist.append([brushfilename, filename])
 	   	if "textureAnimationName " in line:
 			brushfilename = line.replace('textureAnimationName', "").replace('"', "").strip()
-			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+	   			texturelist.append([brushfilename, filename])
 	   	if "MeshName " in line:
 	   		meshfilename = line.replace('MeshName ', "").replace('"', "").strip()
-			if meshfilename != "" and not meshfilename in meshlist:
-	   			meshlist.append(meshfilename)
-	   			meshfiles.append(filename)
-
+			if meshfilename != "" and not [meshfilename, filename] in meshlist:
+	   			meshlist.append([meshfilename, filename])
 
 print "** Reviewing String Counts **"
 path = os.path.join(rootpath, 'String')
@@ -167,33 +149,28 @@ for filename in glob.glob(os.path.join(path, '*')):
    		elif "DiffuseTextureFileName " in line:
 			brushfilename = line.replace('DiffuseTextureFileName', "").replace('"', "").strip()
 			brushfilename = brushfilename.replace("-cl", "").replace("-da", "").replace("-nm", "").replace("-bm", "").strip()
-			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+	   			texturelist.append([brushfilename, filename])
 	   	elif "SelfIlluminationTextureFileName " in line:
 			brushfilename = line.replace('SelfIlluminationTextureFileName', "").replace('"', "").strip()
 			brushfilename = brushfilename.replace("-cl", "").replace("-da", "").replace("-nm", "").replace("-bm", "").strip()
-			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+	   			texturelist.append([brushfilename, filename])
 	   	elif "NormalTextureFileName " in line:
 			brushfilename = line.replace('NormalTextureFileName', "").replace('"', "").strip()
 			brushfilename = brushfilename.replace("-cl", "").replace("-da", "").replace("-nm", "").replace("-bm", "").strip()
-			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+	   			texturelist.append([brushfilename, filename])
 	   	elif "DisplacementTextureFileName " in line:
 			brushfilename = line.replace('DisplacementTextureFileName', "").replace('"', "").strip()
 			brushfilename = brushfilename.replace("-cl", "").replace("-da", "").replace("-nm", "").replace("-bm", "").strip()
-			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+	   			texturelist.append([brushfilename, filename])
 	   	elif "TeamColorTextureFileName " in line:
 			brushfilename = line.replace('TeamColorTextureFileName', "").replace('"', "").strip()
 			brushfilename = brushfilename.replace("-cl", "").replace("-da", "").replace("-nm", "").replace("-bm", "").strip()
-			if brushfilename != "" and not brushfilename in texturelist:
-	   			texturelist.append(brushfilename)
-	   			filenamelist.append(filename)
+			if brushfilename != "" and not [brushfilename, filename] in texturelist:
+	   			texturelist.append([brushfilename, filename])
 
 
    	if p !=0 and NumPoints != p:
@@ -230,73 +207,59 @@ for filename in glob.glob(os.path.join(path, '*')):
 	textures2.append(texfile)
 
 
-together = zip(texturelist, filenamelist)
-sorted_together = sorted(together)
-texturelist_sorted = [x[0] for x in sorted_together]
-filenamelist_sorted = [x[1] for x in sorted_together]
-i = 0
+texturelist.sort(key=lambda x: x[0])
+
 print "** Textures Not Referenced **"
 for tex in textures2:
 	ext = os.path.splitext(tex)
 	test = False
-	for file in texturelist_sorted:
+	for file in texturelist:
 		tmptext = tex
-		ext2 = os.path.splitext(file)
+		ext2 = os.path.splitext(file[0])
 		if len(ext[1]) > 0 and len(ext2[1]) == 0:
 			tmptext = os.path.splitext(tex)[0]
 		elif len(ext2[1]) > 0 and len(ext[1]) == 0:
-			file = os.path.splitext(file)[0]
-		if tex == "Human_CapitalHero_Apollo" and file.startswith("Human_CapitalHero_Apollo"):
-			print len(ext[1])
-			print len(ext2[1])
-			print "file: " + file
-			print "tex: " + tmptext
-			exit()
-		if file == tmptext:
+			file[0] = os.path.splitext(file[0])[0]
+		if file[0] == tmptext:
 			test = True
 			break
 	if not test:
 		print "\tTexture not referenced in a game file: " + tex
 
 
-i = 0
 print "** Referenced Non-existant Textures **"
-for tex in texturelist_sorted:
-	extension = os.path.splitext(tex)
+for tex in texturelist:
+	extension = os.path.splitext(tex[0])
 	test = False
 	dirstr = "Textures"
-	if tex.endswith("texanim"):
+	if tex[0].endswith("texanim"):
 		dirstr = "TextureAnimations"
 	if len(extension[1]) > 0:
 		for file in textures2:
-			if file == tex:
+			if file == tex[0]:
 				test = True
 				break
 		if not test:
-			print '\t"' + tex + '"' + ' listed in "' + str(filenamelist_sorted[i]) + '" does not appear to exist in ' + dirstr + '.'
+			print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]) + '" does not appear to exist in ' + dirstr + '.'
 	else:
 		for file in textures2:
 			file = os.path.splitext(file)[0]
-			if file == tex:
+			if file == tex[0]:
 				test = True
 				break
 		if not test:
-			print '\t"' + tex + '"' + ' listed in "' + str(filenamelist_sorted[i]) + '" does not appear to exist in ' + dirstr + '.'
-	i = i + 1
+			print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]) + '" does not appear to exist in ' + dirstr + '.'
 
-i = 0
 print "** Referenced Non-existant String **"
 for string in stringlist:
-	if not string in stringids:
-		print '\t"' + string + '"' + ' listed in "' + str(filenamelist2[i]) + '" does not appear to exist in English.str.'
-	i = i + 1
+	if not string[0] in stringids:
+		print '\t"' + str(string[0]) + '"' + ' listed in "' + str(string[1]) + '" does not appear to exist in English.str.'
 
-i = 0
+
 print "** Referenced Non-existant Mesh **"
 for mesh in meshlist:
-	if not mesh in meshfilenamelist:
-		print '\t"' + mesh + '"' + ' listed in "' + str(meshfiles[i]) + '" does not appear to exist in Mesh.'
-	i = i + 1
+	if not mesh[0] in meshfilenamelist:
+		print '\t"' + str(mesh[0]) + '"' + ' listed in "' + str(mesh[1]) + '" does not appear to exist in Mesh.'
 
 
    	
