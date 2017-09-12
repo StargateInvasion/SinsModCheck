@@ -15,9 +15,12 @@ else:
 print "\n***** Sins of Solar Empire Mod File Verifcation " + version + " *****"
 
 texturelist = []
+meshlist = []
 filenamelist = []
 stringlist = []
 filenamelist2 = []
+meshfiles = []
+meshfilenamelist = []
 
 print "** Reviewing Brush Counts **"
 path =  os.path.join(rootpath, 'Window')
@@ -111,6 +114,11 @@ for filename in glob.glob(os.path.join(path, '*')):
 			if brushfilename != "" and not brushfilename in texturelist:
 	   			texturelist.append(brushfilename)
 	   			filenamelist.append(filename)
+	   	if "MeshName " in line:
+	   		meshfilename = line.replace('MeshName ', "").replace('"', "").strip()
+			if meshfilename != "" and not meshfilename in meshlist:
+	   			meshlist.append(meshfilename)
+	   			meshfiles.append(filename)
 
 
 print "** Reviewing String Counts **"
@@ -135,6 +143,7 @@ path = os.path.join(rootpath, 'Mesh')
 meshnames = []
 for filename in glob.glob(os.path.join(path, '*')):
 	meshfile = os.path.basename(os.path.splitext(filename)[0])
+	meshfilenamelist.append(os.path.basename(filename))
 	meshnames.append(meshfile)
 	p = 0
 	v = 0
@@ -280,6 +289,13 @@ print "** Referenced Non-existant String **"
 for string in stringlist:
 	if not string in stringids:
 		print '\t"' + string + '"' + ' listed in "' + str(filenamelist2[i]) + '" does not appear to exist in English.str.'
+	i = i + 1
+
+i = 0
+print "** Referenced Non-existant Mesh **"
+for mesh in meshlist:
+	if not mesh in meshfilenamelist:
+		print '\t"' + mesh + '"' + ' listed in "' + str(meshfiles[i]) + '" does not appear to exist in Mesh.'
 	i = i + 1
 
 
