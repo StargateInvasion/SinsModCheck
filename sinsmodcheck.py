@@ -220,13 +220,17 @@ for filename in glob.glob(os.path.join(path, '*')):
 	texfile = os.path.basename(filename)
 	textures2.append(texfile)
 
-texturelist.sort()
+
+together = zip(texturelist, filenamelist)
+sorted_together = sorted(together)
+texturelist_sorted = [x[0] for x in sorted_together]
+filenamelist_sorted = [x[1] for x in sorted_together]
 i = 0
 print "** Textures Not Referenced **"
 for tex in textures2:
 	ext = os.path.splitext(tex)
 	test = False
-	for file in texturelist:
+	for file in texturelist_sorted:
 		tmptext = tex
 		ext2 = os.path.splitext(file)
 		if len(ext[1]) > 0 and len(ext2[1]) == 0:
@@ -248,16 +252,19 @@ for tex in textures2:
 
 i = 0
 print "** Referenced Non-existant Textures **"
-for tex in texturelist:
+for tex in texturelist_sorted:
 	extension = os.path.splitext(tex)
 	test = False
+	dirstr = "Textures"
+	if tex.endswith("texanim"):
+		dirstr = "TextureAnimations"
 	if len(extension[1]) > 0:
 		for file in textures2:
 			if file == tex:
 				test = True
 				break
 		if not test:
-			print '\t"' + tex + '"' + ' listed in "' + str(filenamelist[i]) + '" does not appear to exist in Textures.'
+			print '\t"' + tex + '"' + ' listed in "' + str(filenamelist_sorted[i]) + '" does not appear to exist in ' + dirstr + '.'
 	else:
 		for file in textures2:
 			file = os.path.splitext(file)[0]
@@ -265,7 +272,7 @@ for tex in texturelist:
 				test = True
 				break
 		if not test:
-			print '\t"' + tex + '"' + ' listed in "' + str(filenamelist[i]) + '" does not appear to exist in Textures.'
+			print '\t"' + tex + '"' + ' listed in "' + str(filenamelist_sorted[i]) + '" does not appear to exist in ' + dirstr + '.'
 	i = i + 1
 
 i = 0
