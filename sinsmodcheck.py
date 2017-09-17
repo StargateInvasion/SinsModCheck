@@ -85,6 +85,14 @@ for filename in glob.glob(os.path.join(path, '*')):
    			stringname = line.replace('descStringID', "").replace('"', "").strip()
    			if stringname != "" and not [stringname, filename] in stringlist:
    				stringlist.append([stringname, filename])
+   		elif 'toggleStateOnNameStringID ' in line: 
+   			stringname = line.replace('toggleStateOnNameStringID', "").replace('"', "").strip()
+   			if stringname != "" and not [stringname, filename] in stringlist:
+   				stringlist.append([stringname, filename])
+   		elif 'toggleStateOnDescStringID ' in line: 
+   			stringname = line.replace('toggleStateOnDescStringID', "").replace('"', "").strip()
+   			if stringname != "" and not [stringname, filename] in stringlist:
+   				stringlist.append([stringname, filename])
 
 
 path =  os.path.join(rootpath, 'Particle')
@@ -224,7 +232,7 @@ for tex in textures2:
 			test = True
 			break
 	if not test:
-		print "\tTexture not referenced in a game file: " + tex
+		print "\tTexture not referenced in a plain text game file: " + tex
 
 
 print "** Referenced Non-existant Textures **"
