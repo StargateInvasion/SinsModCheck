@@ -18,6 +18,23 @@ texturelist = []
 meshlist = []
 stringlist = []
 meshfilenamelist = []
+entitymanifest = []
+entitylist = []
+
+print "** Reviewing Entity Manifest **"
+i = 0
+itemCount = 0
+for line in open(os.path.join(rootpath, "entity.manifest")):
+
+	if "entityNameCount" in line:
+   		itemCount = int(line.strip().split()[1])
+   	elif line.startswith("entityName"):
+   		i = i + 1
+   		entitymanifest.append(line.replace("entityName", "").replace('"', "").strip())
+
+if i !=0 and itemCount != i:
+   	print "\tentity.manifest"
+   	print "\t\tentityNameCount: " + str(itemCount) + ", entities: " + str(i)
 
 print "** Reviewing Brush Counts **"
 path =  os.path.join(rootpath, 'Window')
@@ -52,6 +69,7 @@ for filename in glob.glob(os.path.join(path, '*')):
 
 path =  os.path.join(rootpath, 'GameInfo')
 for filename in glob.glob(os.path.join(path, '*')):
+	entitylist.append(os.path.basename(filename))
 	for line in open(filename):
 		if "environmentMapName " in line:
 			brushfilename = line.replace('environmentMapName', "").replace('"', "").strip()
@@ -93,7 +111,6 @@ for filename in glob.glob(os.path.join(path, '*')):
    			stringname = line.replace('toggleStateOnDescStringID', "").replace('"', "").strip()
    			if stringname != "" and not [stringname, filename] in stringlist:
    				stringlist.append([stringname, filename])
-
 
 path =  os.path.join(rootpath, 'Particle')
 for filename in glob.glob(os.path.join(path, '*')):
@@ -191,8 +208,6 @@ for filename in glob.glob(os.path.join(path, '*')):
    		print "\t" + filename
    		print "\t\tNumTriangles: " + str(NumTriangles) + ", Triangles: " + str(t)
 
-   	
-
 
 print "** Reviewing Textures **"
 path = os.path.join(rootpath, 'Textures')
@@ -214,6 +229,13 @@ for filename in glob.glob(os.path.join(path, '*')):
 	texfile = os.path.basename(filename)
 	textures2.append(texfile)
 
+print "** Entities Not Referenced **"
+entitylist.sort()
+entitymanifest.sort()
+for entity in entitylist:
+	if not entity in entitymanifest:
+		print "\tEntity not referenced in the entity.manifest: " + entity
+
 
 texturelist.sort(key=lambda x: x[0])
 
@@ -234,6 +256,11 @@ for tex in textures2:
 	if not test:
 		print "\tTexture not referenced in a plain text game file: " + tex
 
+
+print "** Referenced Non-existant Entity **"
+for entity in entitymanifest:
+	if not entity in entitylist:
+		print '\t"' + entity + '"' + ' listed in the entity.manifest does not appear to exist.'
 
 print "** Referenced Non-existant Textures **"
 for tex in texturelist:
