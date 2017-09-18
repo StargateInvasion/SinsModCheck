@@ -68,7 +68,7 @@ for filename in glob.glob(os.path.join(path, '*')):
 	   			texturelist.append([brushfilename, filename])
 
 path =  os.path.join(rootpath, 'GameInfo')
-for filename in glob.glob(os.path.join(path, '*')):
+for filename in glob.glob(os.path.join(path, '*.entity')):
 	entitylist.append(os.path.basename(filename))
 	for line in open(filename):
 		if "environmentMapName " in line:
@@ -275,7 +275,7 @@ for tex in texturelist:
 				test = True
 				break
 		if not test:
-			print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]) + '" does not appear to exist in ' + dirstr + '.'
+			print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]) + '" does not appear to exist in ' + dirstr + ' folder.'
 	else:
 		for file in textures2:
 			file = os.path.splitext(file)[0]
@@ -283,7 +283,7 @@ for tex in texturelist:
 				test = True
 				break
 		if not test:
-			print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]) + '" does not appear to exist in ' + dirstr + '.'
+			print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]) + '" does not appear to exist in ' + dirstr + ' folder.'
 
 print "** Referenced Non-existant String **"
 for string in stringlist:
@@ -294,7 +294,7 @@ for string in stringlist:
 print "** Referenced Non-existant Mesh **"
 for mesh in meshlist:
 	if not mesh[0] in meshfilenamelist:
-		print '\t"' + str(mesh[0]) + '"' + ' listed in "' + str(mesh[1]) + '" does not appear to exist in Mesh.'
+		print '\t"' + str(mesh[0]) + '"' + ' listed in "' + str(mesh[1]) + '" does not appear to exist in Mesh folder.'
 
 
    	
