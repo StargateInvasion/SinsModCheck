@@ -6,19 +6,26 @@ import glob
 import sys
 version = '1.2'
 verbose = False
+graph = False
 
 if len(sys.argv) > 1:
 	rootpath = sys.argv[1]
 else:
-	print "\tUsage: simsmodcheck.py <moddirectory> --showunused"
+	print "\tUsage: simsmodcheck.py <moddirectory> --showunused --graphexport"
 	sys.exit()
 
-if len(sys.argv) > 2 and sys.argv[2] == "--showunused":
-	verbose = True
+if len(sys.argv) > 2:
+	i = 2
+	while i < len(sys.argv):
+		if sys.argv[i] == "--showunused":
+			verbose = True
+		elif sys.argv[i] == "--graphexport":
+			graph = True
+		i += 1
 
 print "\n***** Sins of Solar Empire Mod File Verifcation " + version + " *****"
 if verbose:
-	print "\nNote: SinsModCheck does not read Binary mod files.  Files listed as unused may be referenced by these binary files.\n"
+	print "\nNote: Not all dependencies have been identified and Binary files in the mod are not read.  Files listed as UNUSED may be referenced by these binary files or not yet identified.\n"
 
 texturelist = []
 meshlist = []
@@ -26,6 +33,8 @@ stringlist = []
 meshfiles = []
 entitymanifest = []
 entitylist = []
+entitylinked = []
+meshlinked = []
 particlefiles = []
 particlelist = []
 binfiles = []
@@ -132,22 +141,78 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
    			stringname = line.replace('toggleStateOnDescStringID', "").replace('"', "").strip()
    			if stringname != "" and not [stringname, filename] in stringlist:
    				stringlist.append([stringname, filename])
-   		elif 'muzzleEffectName' in line:
+   		elif 'muzzleEffectName ' in line:
    			particlename = line.replace('muzzleEffectName', "").replace('"', "").strip()
    			if particlename != "" and not [particlename, filename] in particlelist:
    				particlelist.append([particlename, filename])
-   		elif 'hitEffectName' in line:
+   		elif 'hitEffectName ' in line:
    			particlename = line.replace('hitEffectName', "").replace('"', "").strip()
    			if particlename != "" and not [particlename, filename] in particlelist:
    				particlelist.append([particlename, filename])
-   		elif 'projectileTravelEffectName' in line:
+   		elif 'projectileTravelEffectName ' in line:
    			particlename = line.replace('projectileTravelEffectName', "").replace('"', "").strip()
    			if particlename != "" and not [particlename, filename] in particlelist:
    				particlelist.append([particlename, filename])
-   		elif 'missileTravelEffectName' in line:
+   		elif 'missileTravelEffectName ' in line:
    			particlename = line.replace('missileTravelEffectName', "").replace('"', "").strip()
    			if particlename != "" and not [particlename, filename] in particlelist:
    				particlelist.append([particlename, filename])
+   		elif 'entityDefName ' in line:
+   			entityname = line.replace('entityDefName', "").replace('"', "").strip()
+   			if entityname != "" and not [entityname, filename] in entitylinked:
+   				entitylinked.append([entityname, filename])
+   		elif 'buffType ' in line:
+   			entityname = line.replace('buffType', "").replace('"', "").strip()
+   			if entityname != "" and not [entityname, filename] in entitylinked:
+   				entitylinked.append([entityname, filename])
+   		elif 'ability:0 ' in line:
+   			entityname = line.replace('ability:0', "").replace('"', "").strip()
+   			if entityname != "" and not [entityname, filename] in entitylinked:
+   				entitylinked.append([entityname, filename])
+   		elif 'ability:1 ' in line:
+   			entityname = line.replace('ability:1', "").replace('"', "").strip()
+   			if entityname != "" and not [entityname, filename] in entitylinked:
+   				entitylinked.append([entityname, filename])
+   		elif 'ability:2 ' in line:
+   			entityname = line.replace('ability:2', "").replace('"', "").strip()
+   			if entityname != "" and not [entityname, filename] in entitylinked:
+   				entitylinked.append([entityname, filename])
+   		elif 'ability:3 ' in line:
+   			entityname = line.replace('ability:3', "").replace('"', "").strip()
+   			if entityname != "" and not [entityname, filename] in entitylinked:
+   				entitylinked.append([entityname, filename])
+   		elif 'ability:4 ' in line:
+   			entityname = line.replace('ability:4', "").replace('"', "").strip()
+   			if entityname != "" and not [entityname, filename] in entitylinked:
+   				entitylinked.append([entityname, filename])
+   		elif 'squadTypeEntityDef:0 ' in line:
+   			entityname = line.replace('squadTypeEntityDef:0', "").replace('"', "").strip()
+   			if entityname != "" and not [entityname, filename] in entitylinked:
+   				entitylinked.append([entityname, filename])
+   		elif 'squadTypeEntityDef:1 ' in line:
+   			entityname = line.replace('squadTypeEntityDef:1', "").replace('"', "").strip()
+   			if entityname != "" and not [entityname, filename] in entitylinked:
+   				entitylinked.append([entityname, filename])
+   		elif 'squadTypeEntityDef:2 ' in line:
+   			entityname = line.replace('squadTypeEntityDef:2', "").replace('"', "").strip()
+   			if entityname != "" and not [entityname, filename] in entitylinked:
+   				entitylinked.append([entityname, filename])
+   		elif 'squadTypeEntityDef:3 ' in line:
+   			entityname = line.replace('squadTypeEntityDef:3', "").replace('"', "").strip()
+   			if entityname != "" and not [entityname, filename] in entitylinked:
+   				entitylinked.append([entityname, filename])
+   		elif 'UpgradeType ' in line:
+   			entityname = line.replace('UpgradeType', "").replace('"', "").strip()
+   			if entityname != "" and not [entityname, filename] in entitylinked:
+   				entitylinked.append([entityname, filename])
+   		elif 'cargoShipType ' in line:
+   			entityname = line.replace('cargoShipType', "").replace('"', "").strip()
+   			if entityname != "" and not [entityname, filename] in entitylinked:
+   				entitylinked.append([entityname, filename])
+   		elif 'randomMeshName ' in line:
+   			meshname = line.replace('randomMeshName', "").replace('"', "").strip()
+   			if meshname != "" and not [meshname, filename] in meshlinked:
+   				meshlinked.append([meshname, filename])
 
 path =  os.path.join(rootpath, 'Particle')
 for filename in glob.glob(os.path.join(path, '*')):
@@ -367,3 +432,38 @@ print "** Referenced Non-existant Particle **"
 for item in particlelist:
 	if not item[0] in particlefiles:
 		print '\t"' + str(item[0]) + '"' + ' listed in "' + str(item[1]) + '" does not appear to exist in Particle folder.'
+
+if graph:
+	print '*** Writing Graph Files ***'
+	file = open("graphedges.txt","w") 
+	#file.write('From Type, From Name, Edge, To Type, To Name, Weight\n')
+	for item in particlelist:
+		file.write('Particle, ' + os.path.basename(os.path.splitext(str(item[0]))[0]) + ', Reference, Entity, ' + os.path.basename(os.path.splitext(str(item[1]))[0]) + ', 1\n')
+	for item in texturelist:
+		if str(item[0]).endswith("texanim"):
+			file.write('TextureAnimation, ' + os.path.basename(os.path.splitext(str(item[0]))[0]) + ', Reference, Entity, ' + os.path.basename(os.path.splitext(str(item[1]))[0]) + ', 1\n')
+		else:
+			file.write('Texture, ' + os.path.basename(os.path.splitext(str(item[0]))[0]) + ', Reference, Entity, ' + os.path.basename(os.path.splitext(str(item[1]))[0]) + ', 1\n')
+	for item in meshlist:
+		file.write('Mesh, ' + os.path.basename(os.path.splitext(str(item[0]))[0]) + ', Reference, Entity, ' + os.path.basename(os.path.splitext(str(item[1]))[0]) + ', 1\n')
+	#for item in entitylinked:
+		#file.write('Entity, ' + os.path.basename(os.path.splitext(str(item[0]))[0]) + ', Reference, Entity, ' + os.path.basename(os.path.splitext(str(item[1]))[0]) + ', 1\n')
+	file.close()
+	file = open("graphnodes.txt","w")
+	#file.write('Type, Name\n')
+	for item in particlefiles:
+		file.write('Particle, ' + os.path.basename(os.path.splitext(str(item))[0]) + "\n")
+	for item in textures2:
+		if str(item).endswith("texanim"):
+			file.write('TextureAnimation, ' + os.path.basename(os.path.splitext(str(item))[0]) + "\n")
+		else:
+			file.write('Texture, ' + os.path.basename(os.path.splitext(str(item))[0]) + "\n")
+	for item in meshfiles:
+		file.write('Mesh, ' + os.path.basename(os.path.splitext(str(item))[0]) + "\n")
+	for item in entitylist:
+		file.write('Entity, ' + os.path.basename(os.path.splitext(str(item))[0]) + "\n")
+	file.close()
+
+print '*** Completed ***'
+
+

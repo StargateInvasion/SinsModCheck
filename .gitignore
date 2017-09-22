@@ -2,3 +2,5 @@
 !.gitignore
 Thumbs.db
 desktop.ini
+graphedges.txt
+graphnodes.txt
