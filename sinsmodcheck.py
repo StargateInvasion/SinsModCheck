@@ -4,22 +4,31 @@
 import os
 import glob
 import sys
-version = '1.1'
+version = '1.2'
+verbose = False
 
 if len(sys.argv) > 1:
 	rootpath = sys.argv[1]
 else:
-	print "\tUsage: simsmodcheck.py <moddirectory>"
+	print "\tUsage: simsmodcheck.py <moddirectory> --showunused"
 	sys.exit()
 
+if len(sys.argv) > 2 and sys.argv[2] == "--showunused":
+	verbose = True
+
 print "\n***** Sins of Solar Empire Mod File Verifcation " + version + " *****"
+if verbose:
+	print "\nNote: SinsModCheck does not read Binary mod files.  Files listed as unused may be referenced by these binary files.\n"
 
 texturelist = []
 meshlist = []
 stringlist = []
-meshfilenamelist = []
+meshfiles = []
 entitymanifest = []
 entitylist = []
+particlefiles = []
+particlelist = []
+binfiles = []
 
 print "** Reviewing Entity Manifest **"
 i = 0
@@ -41,7 +50,11 @@ path =  os.path.join(rootpath, 'Window')
 for filename in glob.glob(os.path.join(path, '*')):
 	i = 0
 	itemCount = 0
+	linecount = 0
 	for line in open(filename):
+		if linecount == 0 and line.startswith("BIN"):
+			binfiles.append(os.path.basename(filename))
+		linecount += 1
 		if "brushCount" in line:
    			itemCount = int(line.strip().split()[1])
    		elif "brush\r\n" in line or "brush\n" in line:
@@ -61,7 +74,11 @@ for filename in glob.glob(os.path.join(path, '*')):
 
 path =  os.path.join(rootpath, 'Galaxy')
 for filename in glob.glob(os.path.join(path, '*')):
+	linecount = 0
 	for line in open(filename):
+		if linecount == 0 and line.startswith("BIN"):
+			binfiles.append(os.path.basename(filename))
+		linecount += 1
 		if "browsePictureName " in line:
 			brushfilename = line.replace('browsePictureName', "").replace('"', "").strip()
 			if brushfilename != "" and not [brushfilename, filename] in texturelist:
@@ -70,7 +87,11 @@ for filename in glob.glob(os.path.join(path, '*')):
 path =  os.path.join(rootpath, 'GameInfo')
 for filename in glob.glob(os.path.join(path, '*.entity')):
 	entitylist.append(os.path.basename(filename))
+	linecount = 0
 	for line in open(filename):
+		if linecount == 0 and line.startswith("BIN"):
+			binfiles.append(os.path.basename(filename))
+		linecount += 1
 		if "environmentMapName " in line:
 			brushfilename = line.replace('environmentMapName', "").replace('"', "").strip()
 			if brushfilename != "" and not [brushfilename, filename] in texturelist:
@@ -111,10 +132,32 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
    			stringname = line.replace('toggleStateOnDescStringID', "").replace('"', "").strip()
    			if stringname != "" and not [stringname, filename] in stringlist:
    				stringlist.append([stringname, filename])
+   		elif 'muzzleEffectName' in line:
+   			particlename = line.replace('muzzleEffectName', "").replace('"', "").strip()
+   			if particlename != "" and not [particlename, filename] in particlelist:
+   				particlelist.append([particlename, filename])
+   		elif 'hitEffectName' in line:
+   			particlename = line.replace('hitEffectName', "").replace('"', "").strip()
+   			if particlename != "" and not [particlename, filename] in particlelist:
+   				particlelist.append([particlename, filename])
+   		elif 'projectileTravelEffectName' in line:
+   			particlename = line.replace('projectileTravelEffectName', "").replace('"', "").strip()
+   			if particlename != "" and not [particlename, filename] in particlelist:
+   				particlelist.append([particlename, filename])
+   		elif 'missileTravelEffectName' in line:
+   			particlename = line.replace('missileTravelEffectName', "").replace('"', "").strip()
+   			if particlename != "" and not [particlename, filename] in particlelist:
+   				particlelist.append([particlename, filename])
 
 path =  os.path.join(rootpath, 'Particle')
 for filename in glob.glob(os.path.join(path, '*')):
+	particle = os.path.basename(os.path.splitext(filename)[0])
+	particlefiles.append(particle)
+	linecount = 0
 	for line in open(filename):
+		if linecount == 0 and line.startswith("BIN"):
+			binfiles.append(os.path.basename(filename))
+		linecount += 1
 		if "textureName " in line:
 			brushfilename = line.replace('textureName', "").replace('"', "").strip()
 			if brushfilename != "" and not [brushfilename, filename] in texturelist:
@@ -150,7 +193,7 @@ path = os.path.join(rootpath, 'Mesh')
 meshnames = []
 for filename in glob.glob(os.path.join(path, '*')):
 	meshfile = os.path.basename(os.path.splitext(filename)[0])
-	meshfilenamelist.append(os.path.basename(filename))
+	meshfiles.append(os.path.basename(filename))
 	meshnames.append(meshfile)
 	p = 0
 	v = 0
@@ -158,7 +201,11 @@ for filename in glob.glob(os.path.join(path, '*')):
 	NumPoints = 0
 	NumVertices = 0
 	NumTriangles = 0
+	linecount = 0
 	for line in open(filename):
+		if linecount == 0 and line.startswith("BIN"):
+			binfiles.append(os.path.basename(filename))
+		linecount += 1
 		if "NumPoints" in line:
    			NumPoints = int(line.strip().split()[1])
    		elif "Point\r\n" in line or "Point\n" in line:
@@ -229,33 +276,52 @@ for filename in glob.glob(os.path.join(path, '*')):
 	texfile = os.path.basename(filename)
 	textures2.append(texfile)
 
-print "** Entities Not Referenced **"
-entitylist.sort()
-entitymanifest.sort()
-for entity in entitylist:
-	if not entity in entitymanifest:
-		print "\tEntity not referenced in the entity.manifest: " + entity
+if verbose:
+	print "\n***** Possible Unused Files ****\n"
+
+	print "** Binary Files - Unable to read **"
+	for item in binfiles:
+		print "\tBinary File: " + item
+
+	print "** Entities Not Referenced **"
+	entitylist.sort()
+	entitymanifest.sort()
+	for entity in entitylist:
+		if not entity in entitymanifest:
+			print "\tEntity not referenced in the entity.manifest: " + entity
 
 
-texturelist.sort(key=lambda x: x[0])
+	print "** Particles Not Referenced **"
+	for item in particlefiles:
+		test = False
+		for listitem in particlelist:
+			if listitem[0] == item:
+				test = True
+				break
+		if not test:
+			print "\tEntity not referenced in the entity.manifest: " + item
 
-print "** Textures Not Referenced **"
-for tex in textures2:
-	ext = os.path.splitext(tex)
-	test = False
-	for file in texturelist:
-		tmptext = tex
-		ext2 = os.path.splitext(file[0])
-		if len(ext[1]) > 0 and len(ext2[1]) == 0:
-			tmptext = os.path.splitext(tex)[0]
-		elif len(ext2[1]) > 0 and len(ext[1]) == 0:
-			file[0] = os.path.splitext(file[0])[0]
-		if file[0] == tmptext:
-			test = True
-			break
-	if not test:
-		print "\tTexture not referenced in a plain text game file: " + tex
 
+	texturelist.sort(key=lambda x: x[0])
+
+	print "** Textures Not Referenced **"
+	for tex in textures2:
+		ext = os.path.splitext(tex)
+		test = False
+		for file in texturelist:
+			tmptext = tex
+			ext2 = os.path.splitext(file[0])
+			if len(ext[1]) > 0 and len(ext2[1]) == 0:
+				tmptext = os.path.splitext(tex)[0]
+			elif len(ext2[1]) > 0 and len(ext[1]) == 0:
+				file[0] = os.path.splitext(file[0])[0]
+			if file[0] == tmptext:
+				test = True
+				break
+		if not test:
+			print "\tTexture not referenced in a plain text game file: " + tex
+
+print "\n***** Possible Bugs - Invalid Entries ****\n"
 
 print "** Referenced Non-existant Entity **"
 for entity in entitymanifest:
@@ -293,8 +359,11 @@ for string in stringlist:
 
 print "** Referenced Non-existant Mesh **"
 for mesh in meshlist:
-	if not mesh[0] in meshfilenamelist:
+	if not mesh[0] in meshfiles:
 		print '\t"' + str(mesh[0]) + '"' + ' listed in "' + str(mesh[1]) + '" does not appear to exist in Mesh folder.'
 
 
-   	
+print "** Referenced Non-existant Particle **"
+for item in particlelist:
+	if not item[0] in particlefiles:
+		print '\t"' + str(item[0]) + '"' + ' listed in "' + str(item[1]) + '" does not appear to exist in Particle folder.'
