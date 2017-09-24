@@ -4,7 +4,7 @@
 import os
 import glob
 import sys
-version = '1.2'
+version = '1.3'
 verbose = False
 graph = False
 
@@ -93,10 +93,22 @@ for filename in glob.glob(os.path.join(path, '*')):
 			if brushfilename != "" and not [brushfilename, filename] in texturelist:
 	   			texturelist.append([brushfilename, filename])
 
+print "** Reviewing Entity Values **"
+researchtime = [40,45,50,60,75,90,105,120]
+researchxtime = [5,5,5,5,10,10,10,10]
+researchcredit = [400,600,800,1000,1200,1400,1600,1800]
+researchxcredit = [100,100,100,100,100,100,100,100]
+researchmetal = [0,50,100,150,200,250,300,350]
+researchxmetal = [25,25,25,25,25,25,25,25]
+researchcrystal = [25,100,175,250,325,400,475,550]
+researchxcrystal = [25,25,25,25,25,25,25,25]
 path =  os.path.join(rootpath, 'GameInfo')
 for filename in glob.glob(os.path.join(path, '*.entity')):
 	entitylist.append(os.path.basename(filename))
 	linecount = 0
+	researchsubject = False
+	researchpos = None
+	costcomplete = False
 	for line in open(filename):
 		if linecount == 0 and line.startswith("BIN"):
 			binfiles.append(os.path.basename(filename))
@@ -213,6 +225,55 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
    			meshname = line.replace('randomMeshName', "").replace('"', "").strip()
    			if meshname != "" and not [meshname, filename] in meshlinked:
    				meshlinked.append([meshname, filename])
+
+   		
+   		if researchsubject:
+   			if 'pos [' in line:
+   				researchpos = int(line.replace('pos [', "").strip()[0])
+
+   			if researchpos:
+   				if line.startswith('Tier '):
+   					tier = int(line.replace("Tier", "").strip())
+   					if researchpos != tier:
+   						print "\tExpected Tier: " + str(researchpos) + " - Tier: " + str(tier) + " incorrect for " + filename
+   				if line.startswith('BaseUpgradeTime'):
+   					time = int(float(line.replace("BaseUpgradeTime", "").strip()))
+   					if researchtime[researchpos] != time:
+   						print "\tExpected Time: " + str(researchtime[researchpos]) + " - Time: " + str(time) + " incorrect for " + filename
+   				if line.startswith('PerLevelUpgradeTime '):
+   					time = int(float(line.replace("PerLevelUpgradeTime", "").strip()))
+   					if researchxtime[researchpos] != time:
+   						print "\tExpected PerLevelTime: " + str(researchxtime[researchpos]) + " - PerLevelTime: " + str(time) + " incorrect for " + filename
+   				if line.startswith('PerLevelCostIncrease'):
+   					costcomplete = True
+   				
+   				if not costcomplete and 'credits ' in line:
+   					cost = int(float(line.replace("credits", "").strip()))
+   					if researchcredit[researchpos] != cost:
+   						print "\tExpected Credits: " + str(researchcredit[researchpos]) + " - Credits: " + str(cost) + " incorrect for " + filename
+   				elif 'credits ' in line:
+   					cost = int(float(line.replace("credits", "").strip()))
+   					if researchxcredit[researchpos] != cost:
+   						print "\tExpected PerLevelCredits: " + str(researchxcredit[researchpos]) + " - PerLevelCredits: " + str(cost) + " incorrect for " + filename
+   				if not costcomplete and 'metal ' in line:
+   					cost = int(float(line.replace("metal", "").strip()))
+   					if researchmetal[researchpos] != cost:
+   						print "\tExpected Metal: " + str(researchmetal[researchpos]) + " - Metal: " + str(cost) + " incorrect for " + filename
+   				elif 'metal ' in line:
+   					cost = int(float(line.replace("metal", "").strip()))
+   					if researchxmetal[researchpos] != cost:
+   						print "\tExpected PerLevelMetal: " + str(researchxmetal[researchpos]) + " - PerLevelMetal: " + str(cost) + " incorrect for " + filename
+   				if not costcomplete and 'crystal ' in line:
+   					cost = int(float(line.replace("crystal", "").strip()))
+   					if researchcrystal[researchpos] != cost:
+   						print "\tExpected Crystal: " + str(researchcrystal[researchpos]) + " - Crystal: " + str(cost) + " incorrect for " + filename
+   				elif 'crystal ' in line:
+   					cost = int(float(line.replace("crystal", "").strip()))
+   					if researchxcrystal[researchpos] != cost:
+   						print "\tExpected PerLevelCrystal: " + str(researchxcrystal[researchpos]) + " - PerLevelCrystal: " + str(cost) + " incorrect for " + filename
+   		elif 'entityType "ResearchSubject"' in line and 'ARTIFACT' not in filename:
+   			researchsubject = True
+
 
 path =  os.path.join(rootpath, 'Particle')
 for filename in glob.glob(os.path.join(path, '*')):
