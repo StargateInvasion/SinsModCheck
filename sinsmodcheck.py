@@ -231,7 +231,7 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
    			if 'pos [' in line:
    				researchpos = int(line.replace('pos [', "").strip()[0])
 
-   			if researchpos:
+   			if isinstance( researchpos, int ):
    				if line.startswith('Tier '):
    					tier = int(line.replace("Tier", "").strip())
    					if researchpos != tier:
@@ -246,7 +246,7 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
    						print "\tExpected PerLevelTime: " + str(researchxtime[researchpos]) + " - PerLevelTime: " + str(time) + " incorrect for " + filename
    				if line.startswith('PerLevelCostIncrease'):
    					costcomplete = True
-   				
+
    				if not costcomplete and 'credits ' in line:
    					cost = int(float(line.replace("credits", "").strip()))
    					if researchcredit[researchpos] != cost:
