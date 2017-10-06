@@ -102,6 +102,10 @@ researchmetal = [0,50,100,150,200,250,300,350]
 researchxmetal = [0,25,25,25,25,25,25,25]
 researchcrystal = [25,100,175,250,325,400,475,550]
 researchxcrystal = [25,25,25,25,25,25,25,25]
+asurantime = 0
+asurancost = 0
+humantime = 0
+humancost = 0
 path =  os.path.join(rootpath, 'GameInfo')
 for filename in glob.glob(os.path.join(path, '*.entity')):
 	entitylist.append(os.path.basename(filename))
@@ -109,6 +113,9 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
 	researchsubject = False
 	researchpos = None
 	costcomplete = False
+	totaltime = 0
+	totalcost = 0
+	maxlevels = 0
 	for line in open(filename):
 		if linecount == 0 and line.startswith("BIN"):
 			binfiles.append(os.path.basename(filename))
@@ -232,23 +239,28 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
    				researchpos = int(line.replace('pos [', "").strip()[0])
 
    			if isinstance( researchpos, int ):
+
    				if line.startswith('Tier '):
    					tier = int(line.replace("Tier", "").strip())
    					if researchpos != tier:
    						print "\tExpected Tier: " + str(researchpos) + " - Tier: " + str(tier) + " incorrect for " + filename
    				if line.startswith('BaseUpgradeTime'):
    					time = int(float(line.replace("BaseUpgradeTime", "").strip()))
+   					totaltime = time
    					if researchtime[researchpos] != time:
    						print "\tExpected Time: " + str(researchtime[researchpos]) + " - Time: " + str(time) + " incorrect for " + filename
    				if line.startswith('PerLevelUpgradeTime '):
    					time = int(float(line.replace("PerLevelUpgradeTime", "").strip()))
    					if researchxtime[researchpos] != time:
    						print "\tExpected PerLevelTime: " + str(researchxtime[researchpos]) + " - PerLevelTime: " + str(time) + " incorrect for " + filename
+   				if line.startswith('MaxNumResearchLevels'):
+   					maxlevels = int(float(line.replace("MaxNumResearchLevels", "").strip()))
    				if line.startswith('PerLevelCostIncrease'):
    					costcomplete = True
 
    				if not costcomplete and 'credits ' in line:
    					cost = int(float(line.replace("credits", "").strip()))
+   					totalcost = cost
    					if researchcredit[researchpos] != cost:
    						print "\tExpected Credits: " + str(researchcredit[researchpos]) + " - Credits: " + str(cost) + " incorrect for " + filename
    				elif 'credits ' in line:
@@ -273,7 +285,19 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
    						print "\tExpected PerLevelCrystal: " + str(researchxcrystal[researchpos]) + " - PerLevelCrystal: " + str(cost) + " incorrect for " + filename
    		elif 'entityType "ResearchSubject"' in line and 'ARTIFACT' not in filename:
    			researchsubject = True
+   	if researchsubject:
+   		if "Asuran" in os.path.basename(filename):
+   			asurantime += totaltime * maxlevels / 60
+   			asurancost += totalcost * maxlevels
+   		elif "Human" in os.path.basename(filename):
+   			humantime += totaltime * maxlevels / 60
+   			humancost += totalcost * maxlevels
 
+print "\n"
+print "\tAsuran Research Time: " + str(asurantime) + " minutes"
+print "\tAsuran Research Credits: " + str(asurancost)
+print "\tHuman Research Time: " + str(humantime) + " minutes"
+print "\tHuman Research Credits: " + str(humancost)
 
 path =  os.path.join(rootpath, 'Particle')
 for filename in glob.glob(os.path.join(path, '*')):
