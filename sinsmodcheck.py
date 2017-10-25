@@ -4,7 +4,7 @@
 import os
 import glob
 import sys
-version = '1.3'
+version = '1.4'
 verbose = False
 graph = False
 
@@ -472,7 +472,7 @@ if verbose:
     for item in particlefiles:
         test = False
         for listitem in particlelist:
-            if listitem[0] == item:
+            if listitem[0].lower() == item.lower():
                 test = True
                 break
         if not test:
@@ -492,7 +492,7 @@ if verbose:
                 tmptext = os.path.splitext(tex)[0]
             elif len(ext2[1]) > 0 and len(ext[1]) == 0:
                 file[0] = os.path.splitext(file[0])[0]
-            if file[0] == tmptext:
+            if file[0].lower() == tmptext.lower():
                 test = True
                 break
         if not test:
@@ -502,7 +502,12 @@ print "\n***** Possible Bugs - Invalid Entries ****\n"
 
 print "** Referenced Non-existant Entity **"
 for entity in entitymanifest:
-    if not entity in entitylist:
+    test = False
+    for listitem in entitylist:
+        if listitem.lower() == entity.lower():
+            test = True
+            break   
+    if not test:
         print '\t"' + entity + '"' + ' listed in the entity.manifest does not appear to exist.'
 
 print "** Referenced Non-existant Textures **"
@@ -514,7 +519,7 @@ for tex in texturelist:
         dirstr = "TextureAnimations"
     if len(extension[1]) > 0:
         for file in textures2:
-            if file == tex[0]:
+            if file.lower() == tex[0].lower():
                 test = True
                 break
         if not test:
@@ -522,7 +527,7 @@ for tex in texturelist:
     else:
         for file in textures2:
             file = os.path.splitext(file)[0]
-            if file == tex[0]:
+            if file.lower() == tex[0].lower():
                 test = True
                 break
         if not test:
@@ -530,19 +535,34 @@ for tex in texturelist:
 
 print "** Referenced Non-existant String **"
 for string in stringlist:
-    if not string[0] in stringids:
+    test = False
+    for itemlist in stringids:
+        if string[0].lower() == itemlist.lower():
+            test = True
+            break
+    if not test:
         print '\t"' + str(string[0]) + '"' + ' listed in "' + str(string[1]) + '" does not appear to exist in English.str.'
 
 
 print "** Referenced Non-existant Mesh **"
 for mesh in meshlist:
-    if not mesh[0] in meshfiles:
+    test = False
+    for itemlist in meshfiles:
+        if mesh[0].lower() == itemlist.lower():
+            test = True
+            break
+    if not test:
         print '\t"' + str(mesh[0]) + '"' + ' listed in "' + str(mesh[1]) + '" does not appear to exist in Mesh folder.'
 
 
 print "** Referenced Non-existant Particle **"
 for item in particlelist:
-    if not item[0] in particlefiles:
+    test = False
+    for itemlist in particlefiles:
+        if item[0].lower() == itemlist.lower():
+            test = True
+            break
+    if not test:
         print '\t"' + str(item[0]) + '"' + ' listed in "' + str(item[1]) + '" does not appear to exist in Particle folder.'
 
 if graph:
