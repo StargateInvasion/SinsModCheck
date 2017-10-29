@@ -4,7 +4,7 @@
 import os
 import glob
 import sys
-version = '1.4'
+version = '1.5'
 verbose = False
 graph = False
 
@@ -571,7 +571,7 @@ if verbose:
         if not test:
             print "\tTexture not referenced in a plain text game file: " + tex
 
-print "\n***** Possible Bugs - Invalid Entries ****\n"
+print "\n***** Invalid Entries Check *****"
 
 print "** Referenced Non-existant Entity **"
 for entity in entitymanifest:
