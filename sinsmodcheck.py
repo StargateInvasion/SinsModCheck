@@ -326,6 +326,76 @@ for filename in glob.glob(os.path.join(path, '*.sounddata')):
         print "\t" + filename
         print "\t\tNumEffects: " + str(itemCount) + ", Effect: " + str(i)
 
+print "** Reviewing Galaxy Scenario **"
+for filename in glob.glob(os.path.join(path, '*.galaxyScenarioDef')):
+   starTypeCount = 0
+   starType = 0
+   planetTypeCount = 0
+   planetType = 0
+   orbitBodyTypeCount = 0
+   orbitBodyType = 0
+   planetItemTypeCount = 0
+   planetItemType = 0
+   playerTypeCount = 0
+   playerType = 0
+   planetItemsTemplateCount = 0
+   planetItemsTemplate = 0
+   validPictureGroups = 0
+   pictureGroup = 0
+   validThemeGroups = 0
+   themeGroup = 0
+   for line in open(filename):
+      if "starTypeCount" in line:
+         starTypeCount = int(line.strip().split()[1])
+      elif line.startswith("starType"):
+         starType = starType + 1
+      elif "planetTypeCount" in line:
+         planetTypeCount = int(line.strip().split()[1])
+      elif line.startswith("planetType"):
+         planetType = planetType + 1
+      elif "orbitBodyTypeCount" in line:
+         orbitBodyTypeCount = int(line.strip().split()[1])
+      elif line.startswith("orbitBodyType"):
+         orbitBodyType = orbitBodyType + 1
+      elif "planetItemTypeCount" in line:
+         planetItemTypeCount = int(line.strip().split()[1])
+      elif line.startswith("planetItemType"):
+         planetItemType = planetItemType + 1
+      elif "playerTypeCount" in line:
+         playerTypeCount = int(line.strip().split()[1])
+      elif line.startswith("playerType"):
+         playerType = playerType + 1
+      elif "planetItemsTemplateCount" in line:
+         planetItemsTemplateCount = int(line.strip().split()[1])
+      elif line.startswith("planetItemsTemplate"):
+         planetItemsTemplate = planetItemsTemplate + 1
+      elif "validPictureGroups" in line:
+         validPictureGroups = int(line.strip().split()[1])
+      elif line.startswith("pictureGroup"):
+         pictureGroup = pictureGroup + 1
+      elif "validThemeGroups" in line:
+         validThemeGroups = int(line.strip().split()[1])
+      elif line.startswith("themeGroup"):
+         themeGroup = themeGroup + 1
+
+   if starType !=0 and starTypeCount != starType:
+      print "\t\tGalaxyScenarioDef: (starTypeCount: " + str(starTypeCount) + ", starType: " + str(starType) + ")"
+   if planetType !=0 and planetTypeCount != planetType:
+      print "\t\tGalaxyScenarioDef: (planetTypeCount: " + str(planetTypeCount) + ", planetType: " + str(planetType) + ")"
+   if orbitBodyType !=0 and orbitBodyTypeCount != orbitBodyType:
+      print "\t\tGalaxyScenarioDef: (orbitBodyTypeCount: " + str(orbitBodyTypeCount) + ", orbitBodyType: " + str(orbitBodyType) + ")"
+   if planetItemType !=0 and planetItemTypeCount != planetItemType:
+      print "\t\tGalaxyScenarioDef: (planetItemTypeCount: " + str(planetItemTypeCount) + ", planetItemType: " + str(planetItemType) + ")"
+   if playerType !=0 and playerTypeCount != playerType:
+      print "\t\tGalaxyScenarioDef: (playerTypeCount: " + str(playerTypeCount) + ", playerType: " + str(playerType) + ")"
+   if planetItemsTemplate !=0 and planetItemsTemplateCount != planetItemsTemplate:
+      print "\t\tGalaxyScenarioDef: (planetItemsTemplateCount: " + str(planetItemsTemplateCount) + ", planetItemsTemplate: " + str(planetItemsTemplate) + ")"
+   if pictureGroup !=0 and validPictureGroups != pictureGroup:
+      print "\t\tGalaxyScenarioDef: (validPictureGroups: " + str(validPictureGroups) + ", pictureGroup: " + str(pictureGroup) + ")"
+   if themeGroup !=0 and validThemeGroups != themeGroup:
+      print "\t\tGalaxyScenarioDef: (validThemeGroups: " + str(validThemeGroups) + ", themeGroup: " + str(themeGroup) + ")"
+
+
 path =  os.path.join(rootpath, 'Particle')
 for filename in glob.glob(os.path.join(path, '*')):
     particle = os.path.basename(os.path.splitext(filename)[0])
