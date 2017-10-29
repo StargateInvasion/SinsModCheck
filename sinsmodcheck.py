@@ -431,7 +431,7 @@ for filename in glob.glob(os.path.join(path, '*')):
             i = i + 1
         elif 'ID "' in line:
             stringval = line.replace('ID "', "").replace('"', "").strip()
-            if stringval in stringids:
+            if not stringval.startswith("IDS_TAUNT") and stringval in stringids:
                print "\tDuplicate string in english.str: " + stringval
             stringids.append(stringval)
     if i !=0 and itemCount != i:
