@@ -430,7 +430,10 @@ for filename in glob.glob(os.path.join(path, '*')):
         elif "StringInfo\r\n" in line or "StringInfo\n" in line:
             i = i + 1
         elif 'ID "' in line:
-            stringids.append(line.replace('ID "', "").replace('"', "").strip())
+            stringval = line.replace('ID "', "").replace('"', "").strip()
+            if stringval in stringids:
+               print "\tDuplicate string in english.str: " + stringval
+            stringids.append(stringval)
     if i !=0 and itemCount != i:
         print "\t" + filename
         print "\t\tNumStrings: " + str(itemCount) + ", StringInfo: " + str(i)
