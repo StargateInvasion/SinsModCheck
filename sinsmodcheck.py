@@ -11,6 +11,10 @@ graph = False
 
 if len(sys.argv) > 1:
    rootpath = sys.argv[1]
+   if not os.path.isdir(os.path.expanduser(rootpath)):
+      print "\tUsage: simsmodcheck.py <moddirectory> --showunused --graphexport"
+      print "\nThe Mod directory '" + rootpath + " was not found."
+      sys.exit()
 else:
    print "\tUsage: simsmodcheck.py <moddirectory> --showunused --graphexport"
    sys.exit()
@@ -24,9 +28,21 @@ if len(sys.argv) > 2:
          graph = True
       i += 1
 
+basegame = None
+if (os.path.isdir("C:\Program Files (x86)\Steam\steamapps\common\Sins of a Solar Empire Rebellion")):
+   basegame = "C:\Program Files (x86)\Steam\steamapps\common\Sins of a Solar Empire Rebellion"
+elif (os.path.isdir("C:\Program Files\Steam\steamapps\common\Sins of a Solar Empire Rebellion")):
+   basegame = "C:\Program Files\Steam\steamapps\common\Sins of a Solar Empire Rebellion"
+elif (os.path.isdir(os.path.expanduser("~/.wine/drive_c/Program Files (x86)/Steam/steamapps/common/Sins of a Solar Empire Rebellion"))):
+   basegame = os.path.expanduser("~/.wine/drive_c/Program Files (x86)/Steam/steamapps/common/Sins of a Solar Empire Rebellion")
+
+
 print "\n***** Sins of Solar Empire Mod File Verifcation " + version + " *****"
+if not basegame:
+   print "\nThe Sins of a Solar Empire Rebellion base game was not found.  The script may identify items that are missing in the mod that could default to the base game.  Modify the script to include your basegame path.\n"
 if verbose:
    print "\nNote: Not all dependencies have been identified and Binary files in the mod are not read.  Files listed as UNUSED may be referenced by these binary files or not yet identified.\n"
+
 
 texturelist = []
 meshlist = []
@@ -38,6 +54,16 @@ entitylinked = []
 particlefiles = []
 particlelist = []
 binfiles = []
+basegamemeshes = []
+basegametextures = []
+
+if basegame:
+   path = os.path.join(basegame, 'Mesh')
+   for filename in glob.glob(os.path.join(path, '*')):
+      basegamemeshes.append(os.path.basename(filename).lower().replace(".mesh", ""))
+   path = os.path.join(basegame, 'Textures')
+   for filename in glob.glob(os.path.join(path, '*')):
+      basegametextures.append(os.path.basename(filename).lower())
 
 print "** Reviewing Entity Manifest **"
 i = 0
@@ -725,7 +751,7 @@ for tex in texturelist:
          if file.lower() == tex[0].lower():
             test = True
             break
-      if not test:
+      if not test and not tex[0].lower() in basegametextures:
          print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]).replace(rootpath, "") + '" does not appear to exist in ' + dirstr + ' folder.'
 
 print "** Referenced Non-existant String **"
@@ -740,12 +766,13 @@ for string in stringlist:
 
 print "** Referenced Non-existant Mesh **"
 for mesh in meshlist:
+   meshval = mesh[0].lower().replace(".mesh", "")
    test = False
    for itemlist in meshfiles:
-      if mesh[0].lower().replace(".mesh", "") == itemlist.lower().replace(".mesh", ""):
+      if meshval == itemlist.lower().replace(".mesh", ""):
          test = True
          break
-   if not test:
+   if not test and not meshval in basegamemeshes:
       print '\t"' + str(mesh[0]) + '"' + ' listed in "' + str(mesh[1]).replace(rootpath, "") + '" does not appear to exist in Mesh folder.'
 
 print "** Referenced Non-existant Particle **"
