@@ -176,6 +176,18 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
             particlename = line.replace('missileTravelEffectName', "").replace('"', "").strip()
             if particlename != "" and not [particlename, filename] in particlelist:
                 particlelist.append([particlename, filename])
+        elif 'smallEffectName ' in line:
+            particlename = line.replace('smallEffectName', "").replace('"', "").strip()
+            if particlename != "" and not [particlename, filename] in particlelist:
+                particlelist.append([particlename, filename])
+        elif 'mediumEffectName ' in line:
+            particlename = line.replace('mediumEffectName', "").replace('"', "").strip()
+            if particlename != "" and not [particlename, filename] in particlelist:
+                particlelist.append([particlename, filename])
+        elif 'largeEffectName ' in line:
+            particlename = line.replace('largeEffectName', "").replace('"', "").strip()
+            if particlename != "" and not [particlename, filename] in particlelist:
+                particlelist.append([particlename, filename])
         elif 'entityDefName ' in line:
             entityname = line.replace('entityDefName', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
