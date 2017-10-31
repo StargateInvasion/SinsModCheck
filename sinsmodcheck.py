@@ -549,7 +549,7 @@ if verbose:
                 test = True
                 break
         if not test:
-            print "\tEntity not referenced in the entity.manifest: " + item
+            print "\tParticle not referenced by an Entity: " + item
 
 
     texturelist.sort(key=lambda x: x[0])
