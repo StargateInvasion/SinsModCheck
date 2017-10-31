@@ -188,6 +188,10 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
             particlename = line.replace('largeEffectName', "").replace('"', "").strip()
             if particlename != "" and not [particlename, filename] in particlelist:
                 particlelist.append([particlename, filename])
+        elif 'ExhaustParticleSystemName ' in line:
+            particlename = line.replace('ExhaustParticleSystemName', "").replace('"', "").strip()
+            if particlename != "" and not [particlename, filename] in particlelist:
+                particlelist.append([particlename, filename])
         elif 'entityDefName ' in line:
             entityname = line.replace('entityDefName', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
@@ -324,6 +328,27 @@ if humantime > 0:
     print "   ** Human Research Time: " + str(humantime) + " minutes"
     print "   ** Human Research Credits: " + str(humancost)
 
+for filename in glob.glob(os.path.join(path, '*.constants')):
+    for line in open(filename):
+        if "EffectName " in line:
+            particlename = line.replace('EffectName', "").replace('"', "").strip()
+            if particlename != "" and not [particlename, filename] in particlelist:
+                particlelist.append([particlename, filename])
+        elif "effectName " in line:
+            particlename = line.replace('effectName', "").replace('"', "").strip()
+            if particlename != "" and not [particlename, filename] in particlelist:
+                particlelist.append([particlename, filename])
+        elif "LevelUpEffectName " in line:
+            particlename = line.replace('LevelUpEffectName', "").replace('"', "").strip()
+            if particlename != "" and not [particlename, filename] in particlelist:
+                particlelist.append([particlename, filename])
+
+for filename in glob.glob(os.path.join(path, '*.explosiondata')):
+    for line in open(filename):
+        if "particleSystemName " in line:
+            particlename = line.replace('particleSystemName', "").replace('"', "").strip()
+            if particlename != "" and not [particlename, filename] in particlelist:
+                particlelist.append([particlename, filename])
 
 print "** Reviewing Sound Counts **"
 for filename in glob.glob(os.path.join(path, '*.sounddata')):
