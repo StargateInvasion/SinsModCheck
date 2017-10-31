@@ -330,16 +330,16 @@ if humantime > 0:
 
 for filename in glob.glob(os.path.join(path, '*.constants')):
     for line in open(filename):
-        if "EffectName " in line:
+        if "LevelUpEffectName " in line:
+            particlename = line.replace('LevelUpEffectName', "").replace('"', "").strip()
+            if particlename != "" and not [particlename, filename] in particlelist:
+                particlelist.append([particlename, filename])
+        elif "EffectName " in line:
             particlename = line.replace('EffectName', "").replace('"', "").strip()
             if particlename != "" and not [particlename, filename] in particlelist:
                 particlelist.append([particlename, filename])
         elif "effectName " in line:
             particlename = line.replace('effectName', "").replace('"', "").strip()
-            if particlename != "" and not [particlename, filename] in particlelist:
-                particlelist.append([particlename, filename])
-        elif "LevelUpEffectName " in line:
-            particlename = line.replace('LevelUpEffectName', "").replace('"', "").strip()
             if particlename != "" and not [particlename, filename] in particlelist:
                 particlelist.append([particlename, filename])
 
