@@ -632,6 +632,7 @@ for tex in texturelist:
     extension = os.path.splitext(tex[0])
     test = False
     dirstr = "Textures"
+    tex[0] = tex[0].replace("-cl", "").replace("-da", "").replace("-nm", "").replace("-bm", "").replace("-si", "").strip()
     if tex[0].endswith("texanim"):
         dirstr = "TextureAnimations"
     if len(extension[1]) > 0:
@@ -640,7 +641,7 @@ for tex in texturelist:
                 test = True
                 break
         if not test:
-            print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]) + '" does not appear to exist in ' + dirstr + ' folder.'
+            print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]).replace(rootpath, "") + '" does not appear to exist in ' + dirstr + ' folder.'
     else:
         for file in textures2:
             file = os.path.splitext(file)[0]
@@ -648,7 +649,7 @@ for tex in texturelist:
                 test = True
                 break
         if not test:
-            print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]) + '" does not appear to exist in ' + dirstr + ' folder.'
+            print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]).replace(rootpath, "") + '" does not appear to exist in ' + dirstr + ' folder.'
 
 print "** Referenced Non-existant String **"
 for string in stringlist:
@@ -658,7 +659,7 @@ for string in stringlist:
             test = True
             break
     if not test:
-        print '\t"' + str(string[0]) + '"' + ' listed in "' + str(string[1]) + '" does not appear to exist in English.str.'
+        print '\t"' + str(string[0]) + '"' + ' listed in "' + str(string[1]).replace(rootpath, "") + '" does not appear to exist in English.str.'
 
 
 print "** Referenced Non-existant Mesh **"
@@ -669,7 +670,7 @@ for mesh in meshlist:
             test = True
             break
     if not test:
-        print '\t"' + str(mesh[0]) + '"' + ' listed in "' + str(mesh[1]) + '" does not appear to exist in Mesh folder.'
+        print '\t"' + str(mesh[0]) + '"' + ' listed in "' + str(mesh[1]).replace(rootpath, "") + '" does not appear to exist in Mesh folder.'
 
 
 print "** Referenced Non-existant Particle **"
@@ -680,7 +681,7 @@ for item in particlelist:
             test = True
             break
     if not test:
-        print '\t"' + str(item[0]) + '"' + ' listed in "' + str(item[1]) + '" does not appear to exist in Particle folder.'
+        print '\t"' + str(item[0]) + '"' + ' listed in "' + str(item[1]).replace(rootpath, "") + '" does not appear to exist in Particle folder.'
 
 if graph:
     print '*** Writing Graph Files ***'
