@@ -4,7 +4,7 @@
 import os
 import glob
 import sys
-version = '1.5'
+version = '1.6'
 verbose = False
 graph = False
 
@@ -525,6 +525,13 @@ path = os.path.join(rootpath, 'TextureAnimations')
 for filename in glob.glob(os.path.join(path, '*')):
     texfile = os.path.basename(filename)
     textures2.append(texfile)
+    for line in open(filename):
+        if "textureFileName" in line:
+            brushfilename = line.replace('textureFileName', "").replace('"', "").strip()
+            brushfilename = brushfilename.replace("-cl", "").replace("-da", "").replace("-nm", "").replace("-bm", "").strip()
+            if brushfilename != "" and not [brushfilename, filename] in texturelist:
+                texturelist.append([brushfilename, filename])
+
 
 if verbose:
     print "\n***** Possible Unused Files ****\n"
