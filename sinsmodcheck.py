@@ -63,7 +63,7 @@ if basegame:
       basegamemeshes.append(os.path.basename(filename).lower().replace(".mesh", ""))
    path = os.path.join(basegame, 'Textures')
    for filename in glob.glob(os.path.join(path, '*')):
-      basegametextures.append(os.path.basename(filename).lower())
+      basegametextures.append(os.path.basename(filename).lower().replace(".tga", "").replace(".dds", ""))
 
 print "** Reviewing Entity Manifest **"
 i = 0
@@ -743,7 +743,7 @@ for tex in texturelist:
          if file.lower() == tex[0].lower():
             test = True
             break
-      if not test:
+      if not test and not tex[0].lower().replace(".tga", "").replace(".dds", "") in basegametextures:
          print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]).replace(rootpath, "") + '" does not appear to exist in ' + dirstr + ' folder.'
    else:
       for file in textures2:
@@ -751,7 +751,7 @@ for tex in texturelist:
          if file.lower() == tex[0].lower():
             test = True
             break
-      if not test and not tex[0].lower() in basegametextures:
+      if not test and not tex[0].lower().replace(".tga", "").replace(".dds", "") in basegametextures:
          print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]).replace(rootpath, "") + '" does not appear to exist in ' + dirstr + ' folder.'
 
 print "** Referenced Non-existant String **"
