@@ -4,10 +4,50 @@
 import os
 import glob
 import sys
+import hashlib
+import subprocess
 
-version = '1.7'
+version = '1.8'
 verbose = False
 graph = False
+
+def md5(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+def baseDup(directory):
+   basepath = os.path.join(basegame, directory)
+   path = os.path.join(rootpath, directory)
+   for filename in glob.glob(os.path.join(path, '*')):
+      gamefile = os.path.basename(filename)
+      if os.path.exists(os.path.join(basepath, gamefile)):
+         filemd5 = md5(filename)
+         sinsmd5 = md5(os.path.join(basepath, gamefile))
+         if filemd5 == sinsmd5:
+            print "\tUnnecessary File: " + gamefile
+            #os.remove(filename)
+         elif directory != 'Texture' and directory != 'Sound':
+            fline=open(filename, "r").readline().rstrip().encode("hex").replace("efbbbf", "").decode("hex") #Remove Byte Order Mark
+            bline=open(os.path.join(basepath, gamefile), "r").readline().rstrip()
+            if fline == 'TXT' and bline == 'BIN':
+               print "checking " + gamefile
+               datatype = directory.lower()
+               if datatype == "gameinfo":
+                  datatype = 'entity'
+               elif datatype == "window":
+                  datatype = 'brushes'
+                  subprocess.call(['wine', os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, filename, filename + ".tmp", 'bin'])
+                  filemd5 = md5(filename + ".tmp")
+                  os.remove(filename + ".tmp")
+               if filemd5 == sinsmd5:
+                  print "\tUnnecessary File: " + gamefile
+                  #os.remove(filename)
+               else:
+                  pass
+                  #subprocess.call(['wine', os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, os.path.join(basepath, gamefile), filename + ".base", 'txt'])
 
 if len(sys.argv) > 1:
    rootpath = sys.argv[1]
@@ -56,6 +96,8 @@ particlelist = []
 binfiles = []
 basegamemeshes = []
 basegametextures = []
+basegameparticles = []
+basegameentites = []
 
 if basegame:
    path = os.path.join(basegame, 'Mesh')
@@ -64,6 +106,12 @@ if basegame:
    path = os.path.join(basegame, 'Textures')
    for filename in glob.glob(os.path.join(path, '*')):
       basegametextures.append(os.path.basename(filename).lower().replace(".tga", "").replace(".dds", ""))
+   path = os.path.join(basegame, 'Particle')
+   for filename in glob.glob(os.path.join(path, '*')):
+      basegameparticles.append(os.path.basename(filename).lower().replace(".particle", ""))
+   path = os.path.join(basegame, 'GameInfo')
+   for filename in glob.glob(os.path.join(path, '*')):
+      basegameentites.append(os.path.basename(filename).lower())
 
 print "** Reviewing Entity Manifest **"
 i = 0
@@ -683,7 +731,7 @@ else:
    for item in particlefiles:
       test = False
       for listitem in particlelist:
-         if listitem[0].lower() == item.lower():
+         if listitem[0].lower().replace(".particle", "") == item.lower().replace(".particle", ""):
             test = True
             break
       if not test:
@@ -693,7 +741,7 @@ else:
    for item in meshfiles:
       test = False
       for listitem in meshlist:
-         if listitem[0].lower() == item.lower():
+         if listitem[0].lower().replace(".mesh", "") == item.lower().replace(".mesh", ""):
             test = True
             break
       if not test:
@@ -706,13 +754,7 @@ else:
       ext = os.path.splitext(tex)
       test = False
       for file in texturelist:
-         tmptext = tex
-         ext2 = os.path.splitext(file[0])
-         if len(ext[1]) > 0 and len(ext2[1]) == 0:
-            tmptext = os.path.splitext(tex)[0]
-         elif len(ext2[1]) > 0 and len(ext[1]) == 0:
-            file[0] = os.path.splitext(file[0])[0]
-         if file[0].lower() == tmptext.lower():
+         if file[0].lower().replace(".tga", "").replace(".dds", "") == tex.lower().replace(".tga", "").replace(".dds", ""):
             test = True
             break
       if not test:
@@ -727,7 +769,7 @@ for entity in entitymanifest:
       if listitem.lower() == entity.lower():
          test = True
          break
-   if not test:
+   if not test and not listitem.lower() in basegameentites:
       print '\t"' + entity + '"' + ' listed in the entity.manifest does not appear to exist.'
 
 print "** Referenced Non-existant Textures **"
@@ -782,8 +824,20 @@ for item in particlelist:
       if item[0].lower() == itemlist.lower():
          test = True
          break
-   if not test:
+   if not test and not item[0].lower() in basegameparticles:
       print '\t"' + str(item[0]) + '"' + ' listed in "' + str(item[1]).replace(rootpath, "") + '" does not appear to exist in Particle folder.'
+
+if verbose and basegame:
+   print '\n*** Unnecessary File Check (Dups with Base) ***'
+   print '\tNote: this process may create a temporary file to properly compare a game binary'
+   baseDup('Textures')
+   baseDup('Sound')
+   baseDup('Mesh')
+   baseDup('GameInfo')
+   baseDup('Particle')
+   baseDup('Galaxy')
+   #baseDup('Window')
+
 
 if graph:
    print '*** Writing Graph Files ***'
@@ -825,3 +879,4 @@ if graph:
    file.close()
 
 print '*** Completed ***'
+
