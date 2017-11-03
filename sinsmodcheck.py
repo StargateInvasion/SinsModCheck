@@ -769,7 +769,7 @@ for entity in entitymanifest:
       if listitem.lower() == entity.lower():
          test = True
          break
-   if not test and not listitem.lower() in basegameentites:
+   if not test and not entity.lower() in basegameentites:
       print '\t"' + entity + '"' + ' listed in the entity.manifest does not appear to exist.'
 
 print "** Referenced Non-existant Textures **"
@@ -777,7 +777,7 @@ for tex in texturelist:
    extension = os.path.splitext(tex[0])
    test = False
    dirstr = "Textures"
-   tex[0] = tex[0].replace("-cl", "").replace("-da", "").replace("-nm", "").replace("-bm", "").replace("-si", "").strip()
+   tex[0] = tex[0].strip()
    if tex[0].endswith("texanim"):
       dirstr = "TextureAnimations"
    if len(extension[1]) > 0:
@@ -786,7 +786,12 @@ for tex in texturelist:
             test = True
             break
       if not test and not tex[0].lower().replace(".tga", "").replace(".dds", "") in basegametextures:
-         print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]).replace(rootpath, "") + '" does not appear to exist in ' + dirstr + ' folder.'
+            for basetex in basegametextures:
+                  if basetex.replace("-cl", "").replace("-da", "").replace("-nm", "").replace("-bm", "").strip() == tex[0].lower().replace(".tga", "").replace(".dds", ""):
+                        test = True
+                        break
+            if not test:     
+                  print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]).replace(rootpath, "") + '" does not appear to exist in ' + dirstr + ' folder.'
    else:
       for file in textures2:
          file = os.path.splitext(file)[0]
@@ -794,7 +799,7 @@ for tex in texturelist:
             test = True
             break
       if not test and not tex[0].lower().replace(".tga", "").replace(".dds", "") in basegametextures:
-         print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]).replace(rootpath, "") + '" does not appear to exist in ' + dirstr + ' folder.'
+            print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]).replace(rootpath, "") + '" does not appear to exist in ' + dirstr + ' folder.'
 
 print "** Referenced Non-existant String **"
 for string in stringlist:
