@@ -7,7 +7,7 @@ import sys
 import hashlib
 import subprocess
 
-version = '1.8'
+version = '1.9'
 verbose = False
 graph = False
 
@@ -26,28 +26,28 @@ def baseDup(directory):
         if os.path.exists(os.path.join(basepath, gamefile)):
             filemd5 = md5(filename)
             sinsmd5 = md5(os.path.join(basepath, gamefile))
-        if filemd5 == sinsmd5:
-            print "\tUnnecessary File: " + gamefile
-            #os.remove(filename)
-        elif directory != 'Texture' and directory != 'Sound':
-            fline = open(filename, "r").readline().rstrip().encode("hex").replace("efbbbf", "").decode("hex") #Remove Byte Order Mark
-            bline = open(os.path.join(basepath, gamefile), "r").readline().rstrip()
-            if fline == 'TXT' and bline == 'BIN':
-                print "checking " + gamefile
-                datatype = directory.lower()
-                if datatype == "gameinfo":
-                    datatype = 'entity'
-                elif datatype == "window":
-                    datatype = 'brushes'
+            if filemd5 == sinsmd5:
+                print "\tUnnecessary File: " + gamefile
+                #os.remove(filename)
+            elif directory != 'Texture' and directory != 'Sound':
+                fline = open(filename, "r").readline().rstrip().encode("hex").replace("efbbbf", "").decode("hex") #Remove Byte Order Mark
+                bline = open(os.path.join(basepath, gamefile), "r").readline().rstrip()
+                if fline == 'TXT' and bline == 'BIN':
+                    print "checking " + gamefile
+                    datatype = directory.lower()
+                    if datatype == "gameinfo":
+                        datatype = 'entity'
+                    elif datatype == "window":
+                        datatype = 'brushes'
                     subprocess.call(['wine', os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, filename, filename + ".tmp", 'bin'])
                     filemd5 = md5(filename + ".tmp")
                     os.remove(filename + ".tmp")
-                if filemd5 == sinsmd5:
-                    print "\tUnnecessary File: " + gamefile
-                    #os.remove(filename)
-                else:
-                    pass
-                    #subprocess.call(['wine', os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, os.path.join(basepath, gamefile), filename + ".base", 'txt'])
+                    if filemd5 == sinsmd5:
+                        print "\tUnnecessary File: " + gamefile
+                        #os.remove(filename)
+                    else:
+                        pass
+                        #subprocess.call(['wine', os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, os.path.join(basepath, gamefile), filename + ".base", 'txt'])
 
 if len(sys.argv) > 1:
     rootpath = sys.argv[1]
