@@ -7,7 +7,7 @@ import sys
 import hashlib
 import subprocess
 
-version = '1.9'
+version = '1.10'
 verbose = False
 graph = False
 
