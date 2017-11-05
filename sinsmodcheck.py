@@ -85,6 +85,7 @@ if verbose:
 
 
 texturelist = []
+brushlist = []
 meshlist = []
 stringlist = []
 meshfiles = []
@@ -128,6 +129,7 @@ if i != 0 and itemCount != i:
     print "\t\tentityNameCount: " + str(itemCount) + ", entities: " + str(i)
 
 print "** Reviewing Brush Counts **"
+brushentries = []
 path = os.path.join(rootpath, 'Window')
 for filename in glob.glob(os.path.join(path, '*')):
     i = 0
@@ -136,6 +138,7 @@ for filename in glob.glob(os.path.join(path, '*')):
     for line in open(filename):
         if linecount == 0 and line.startswith("BIN"):
             binfiles.append(os.path.basename(filename))
+            break
         linecount += 1
         if "brushCount" in line:
             itemCount = int(line.strip().split()[1])
@@ -149,6 +152,10 @@ for filename in glob.glob(os.path.join(path, '*')):
             brushfilename = line.replace('textureName', "").replace('"', "").strip()
             if brushfilename != "" and not [brushfilename, filename] in texturelist:
                 texturelist.append([brushfilename, filename])
+        elif line.strip().startswith("name "):
+            brushentry = line.replace('name ', "").replace('"', "").strip()
+            if brushentry != "" and not [brushentry, filename] in brushentries:
+                brushentries.append([brushentry, filename])
 
     if i != 0 and itemCount != i:
         print "\t" + filename
@@ -160,6 +167,7 @@ for filename in glob.glob(os.path.join(path, '*')):
     for line in open(filename):
         if linecount == 0 and line.startswith("BIN"):
             binfiles.append(os.path.basename(filename))
+            break
         linecount += 1
         if "browsePictureName " in line:
             brushfilename = line.replace('browsePictureName', "").replace('"', "").strip()
@@ -194,6 +202,7 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
     for line in open(filename):
         if linecount == 0 and line.startswith("BIN"):
             binfiles.append(os.path.basename(filename))
+            break
         linecount += 1
         if 'entityType "ResearchSubject"' in line and 'ARTIFACT' not in filename:
             researchsubject = True
@@ -221,6 +230,10 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
             brushfilename = line.replace('textureName', "").replace('"', "").strip()
             if brushfilename != "" and not [brushfilename, filename] in texturelist:
                 texturelist.append([brushfilename, filename])
+        elif 'title ' in line:
+            stringname = line.replace('title', "").replace('"', "").strip()
+            if stringname != "" and not [stringname, filename] in stringlist:
+                stringlist.append([stringname, filename])
         elif 'nameStringID ' in line:
             stringname = line.replace('nameStringID', "").replace('"', "").strip()
             if stringname != "" and not [stringname, filename] in stringlist:
@@ -345,13 +358,47 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
             meshname = line.replace('meshName', "").replace('"', "").strip()
             if meshname != "" and not [meshname, filename] in meshlist:
                 meshlist.append([meshname, filename])
+        elif line.strip().startswith("picture "):
+            brushname = line.replace("picture", "").replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])
+        elif line.strip().startswith("backdrop "):
+            brushname = line.replace("backdrop", "").replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])
+        elif line.strip().startswith("tierIndicatorBackdrop "):
+            brushname = line.replace("tierIndicatorBackdrop", "").replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])
+        elif line.strip().startswith("hudIcon "):
+            brushname = line.replace("hudIcon", "").replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])
+        elif line.strip().startswith("smallHudIcon "):
+            brushname = line.replace("smallHudIcon", "").replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])
+        elif line.strip().startswith("smallHudIcon "):
+            brushname = line.replace("smallHudIcon", "").replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])
+        elif line.strip().startswith("infoCardIcon "):
+            brushname = line.replace("infoCardIcon", "").replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])
+        elif line.strip().startswith("mainViewIcon "):
+            brushname = line.replace("mainViewIcon", "").replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])  
+        elif line.strip().startswith("undetectedMainViewIcon "):
+            brushname = line.replace("undetectedMainViewIcon", "").replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])           
 
         if researchsubject:
             if 'pos [' in line:
                 researchpos = int(line.replace('pos [', "").strip()[0])
-
             if isinstance(researchpos, int):
-
                 if line.startswith('Tier '):
                     tier = int(line.replace("Tier", "").strip())
                     if researchpos != tier:
@@ -760,6 +807,17 @@ else:
                 break
         if not test:
             print "\tTexture not referenced in a plain text game file: " + tex
+    
+    print "** Textures Not Referenced **"
+    for brush in brushentries:
+        test = False
+        for item in brushlist:
+            if item[0].lower() == brush[0].lower():
+                test = True
+                break
+        if not test:
+            pass
+            #print "\tBrush not referenced in a plain text game file: " + brush[0]
 
 print "\n***** Invalid Entries Check *****"
 
@@ -832,6 +890,17 @@ for item in particlelist:
             break
     if not test and not item[0].lower() in basegameparticles:
         print '\t"' + str(item[0]) + '"' + ' listed in "' + str(item[1]).replace(rootpath, "") + '" does not appear to exist in Particle folder.'
+
+print "** Referenced Non-existant Brush **"
+for item in brushlist:
+    test = False
+    for itemlist in brushentries:
+        if item[0].lower() == itemlist[0].lower():
+            test = True
+            break
+    if not test:
+        print '\t"' + str(item[0]) + '"' + ' listed in "' + str(item[1]).replace(rootpath, "") + '" does not appear to exist in a Brush file.'
+
 
 if verbose and basegame:
     print '\n*** Unnecessary File Check (Dups with Base) ***'
