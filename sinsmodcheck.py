@@ -179,6 +179,8 @@ asurantime = 0
 asurancost = 0
 humantime = 0
 humancost = 0
+goauldtime = 0
+goauldcost = 0
 path = os.path.join(rootpath, 'GameInfo')
 for filename in glob.glob(os.path.join(path, '*.entity')):
     entitylist.append(os.path.basename(filename))
@@ -193,7 +195,9 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
         if linecount == 0 and line.startswith("BIN"):
             binfiles.append(os.path.basename(filename))
         linecount += 1
-        if "environmentMapName " in line:
+        if 'entityType "ResearchSubject"' in line and 'ARTIFACT' not in filename:
+            researchsubject = True
+        elif "environmentMapName " in line:
             brushfilename = line.replace('environmentMapName', "").replace('"', "").strip()
             if brushfilename != "" and not [brushfilename, filename] in texturelist:
                 texturelist.append([brushfilename, filename])
@@ -342,65 +346,66 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
             if meshname != "" and not [meshname, filename] in meshlist:
                 meshlist.append([meshname, filename])
 
-if researchsubject:
-    if 'pos [' in line:
-        researchpos = int(line.replace('pos [', "").strip()[0])
+        if researchsubject:
+            if 'pos [' in line:
+                researchpos = int(line.replace('pos [', "").strip()[0])
 
-    if isinstance(researchpos, int):
+            if isinstance(researchpos, int):
 
-        if line.startswith('Tier '):
-            tier = int(line.replace("Tier", "").strip())
-            if researchpos != tier:
-                print "\tExpected Tier: " + str(researchpos) + " - Tier: " + str(tier) + " incorrect for " + filename
-        if line.startswith('BaseUpgradeTime'):
-            time = int(float(line.replace("BaseUpgradeTime", "").strip()))
-            totaltime = time
-            if researchtime[researchpos] != time:
-                print "\tExpected Time: " + str(researchtime[researchpos]) + " - Time: " + str(time) + " incorrect for " + filename
-        if line.startswith('PerLevelUpgradeTime '):
-            time = int(float(line.replace("PerLevelUpgradeTime", "").strip()))
-            if researchxtime[researchpos] != time:
-                print "\tExpected PerLevelTime: " + str(researchxtime[researchpos]) + " - PerLevelTime: " + str(time) + " incorrect for " + filename
-        if line.startswith('MaxNumResearchLevels'):
-            maxlevels = int(float(line.replace("MaxNumResearchLevels", "").strip()))
-        if line.startswith('PerLevelCostIncrease'):
-            costcomplete = True
+                if line.startswith('Tier '):
+                    tier = int(line.replace("Tier", "").strip())
+                    if researchpos != tier:
+                        print "\tExpected Tier: " + str(researchpos) + " - Tier: " + str(tier) + " incorrect for " + filename
+                if line.startswith('BaseUpgradeTime'):
+                    time = int(float(line.replace("BaseUpgradeTime", "").strip()))
+                    totaltime = time
+                    if researchtime[researchpos] != time:
+                        print "\tExpected Time: " + str(researchtime[researchpos]) + " - Time: " + str(time) + " incorrect for " + filename
+                if line.startswith('PerLevelUpgradeTime '):
+                    time = int(float(line.replace("PerLevelUpgradeTime", "").strip()))
+                    if researchxtime[researchpos] != time:
+                        print "\tExpected PerLevelTime: " + str(researchxtime[researchpos]) + " - PerLevelTime: " + str(time) + " incorrect for " + filename
+                if line.startswith('MaxNumResearchLevels'):
+                    maxlevels = int(float(line.replace("MaxNumResearchLevels", "").strip()))
+                if line.startswith('PerLevelCostIncrease'):
+                    costcomplete = True
 
-        if not costcomplete and 'credits ' in line:
-            cost = int(float(line.replace("credits", "").strip()))
-            totalcost = cost
-            if researchcredit[researchpos] != cost:
-                print "\tExpected Credits: " + str(researchcredit[researchpos]) + " - Credits: " + str(cost) + " incorrect for " + filename
-        elif 'credits ' in line:
-            cost = int(float(line.replace("credits", "").strip()))
-            if researchxcredit[researchpos] != cost:
-                print "\tExpected PerLevelCredits: " + str(researchxcredit[researchpos]) + " - PerLevelCredits: " + str(cost) + " incorrect for " + filename
-        if not costcomplete and 'metal ' in line:
-            cost = int(float(line.replace("metal", "").strip()))
-            if researchmetal[researchpos] != cost:
-                print "\tExpected Metal: " + str(researchmetal[researchpos]) + " - Metal: " + str(cost) + " incorrect for " + filename
-        elif 'metal ' in line:
-            cost = int(float(line.replace("metal", "").strip()))
-            if researchxmetal[researchpos] != cost:
-                print "\tExpected PerLevelMetal: " + str(researchxmetal[researchpos]) + " - PerLevelMetal: " + str(cost) + " incorrect for " + filename
-        if not costcomplete and 'crystal ' in line:
-            cost = int(float(line.replace("crystal", "").strip()))
-            if researchcrystal[researchpos] != cost:
-                print "\tExpected Crystal: " + str(researchcrystal[researchpos]) + " - Crystal: " + str(cost) + " incorrect for " + filename
-        elif 'crystal ' in line:
-            cost = int(float(line.replace("crystal", "").strip()))
-            if researchxcrystal[researchpos] != cost:
-                print "\tExpected PerLevelCrystal: " + str(
-                researchxcrystal[researchpos]) + " - PerLevelCrystal: " + str(cost) + " incorrect for " + filename
-elif 'entityType "ResearchSubject"' in line and 'ARTIFACT' not in filename:
-    researchsubject = True
-if researchsubject:
-    if "Asuran" in os.path.basename(filename):
-        asurantime += totaltime * maxlevels / 60
-        asurancost += totalcost * maxlevels
-    elif "Human" in os.path.basename(filename):
-        humantime += totaltime * maxlevels / 60
-        humancost += totalcost * maxlevels
+                if not costcomplete and 'credits ' in line:
+                    cost = int(float(line.replace("credits", "").strip()))
+                    totalcost = cost
+                    if researchcredit[researchpos] != cost:
+                        print "\tExpected Credits: " + str(researchcredit[researchpos]) + " - Credits: " + str(cost) + " incorrect for " + filename
+                elif 'credits ' in line:
+                    cost = int(float(line.replace("credits", "").strip()))
+                    if researchxcredit[researchpos] != cost:
+                        print "\tExpected PerLevelCredits: " + str(researchxcredit[researchpos]) + " - PerLevelCredits: " + str(cost) + " incorrect for " + filename
+                if not costcomplete and 'metal ' in line:
+                    cost = int(float(line.replace("metal", "").strip()))
+                    if researchmetal[researchpos] != cost:
+                        print "\tExpected Metal: " + str(researchmetal[researchpos]) + " - Metal: " + str(cost) + " incorrect for " + filename
+                elif 'metal ' in line:
+                    cost = int(float(line.replace("metal", "").strip()))
+                    if researchxmetal[researchpos] != cost:
+                        print "\tExpected PerLevelMetal: " + str(researchxmetal[researchpos]) + " - PerLevelMetal: " + str(cost) + " incorrect for " + filename
+                if not costcomplete and 'crystal ' in line:
+                    cost = int(float(line.replace("crystal", "").strip()))
+                    if researchcrystal[researchpos] != cost:
+                        print "\tExpected Crystal: " + str(researchcrystal[researchpos]) + " - Crystal: " + str(cost) + " incorrect for " + filename
+                elif 'crystal ' in line:
+                    cost = int(float(line.replace("crystal", "").strip()))
+                    if researchxcrystal[researchpos] != cost:
+                        print "\tExpected PerLevelCrystal: " + str(
+                        researchxcrystal[researchpos]) + " - PerLevelCrystal: " + str(cost) + " incorrect for " + filename
+
+            if "Asuran" in os.path.basename(filename):
+                asurantime += totaltime * maxlevels / 60
+                asurancost += totalcost * maxlevels
+            elif "Human" in os.path.basename(filename):
+                humantime += totaltime * maxlevels / 60
+                humancost += totalcost * maxlevels
+            elif "Goauld" in os.path.basename(filename):
+                goauldtime += totaltime * maxlevels /60
+                goauldcost += totalcost * maxlevels
 
 if asurantime > 0:
     print "   ** Asuran Research Time: " + str(asurantime) + " minutes"
@@ -408,6 +413,9 @@ if asurantime > 0:
 if humantime > 0:
     print "   ** Human Research Time: " + str(humantime) + " minutes"
     print "   ** Human Research Credits: " + str(humancost)
+if goauldtime > 0:
+    print "   ** Goauld Research Time: " + str(goauldtime) + " minutes"
+    print "   ** Goauld Research Credits: " + str(goauldcost)
 
 for filename in glob.glob(os.path.join(path, '*.constants')):
     for line in open(filename):
