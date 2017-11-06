@@ -11,6 +11,7 @@ version = '1.11'
 verbose = False
 graph = False
 skipbin = False
+fullbin = False
 
 def md5(fname):
     hash_md5 = hashlib.md5()
@@ -22,6 +23,7 @@ def md5(fname):
 def baseDup(directory):
     basepath = os.path.join(basegame, directory)
     path = os.path.join(rootpath, directory)
+    osname = os.name
     for filename in glob.glob(os.path.join(path, '*')):
         gamefile = os.path.basename(filename)
         if os.path.exists(os.path.join(basepath, gamefile)):
@@ -34,21 +36,42 @@ def baseDup(directory):
                 fline = open(filename, "r").readline().rstrip().encode("hex").replace("efbbbf", "").decode("hex") #Remove Byte Order Mark
                 bline = open(os.path.join(basepath, gamefile), "r").readline().rstrip()
                 if fline == 'TXT' and bline == 'BIN':
-                    print "checking " + gamefile
-                    datatype = directory.lower()
-                    if datatype == "gameinfo":
-                        datatype = 'entity'
-                    elif datatype == "window":
-                        datatype = 'brushes'
-                    subprocess.call(['wine', os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, filename, filename + ".tmp", 'bin'])
-                    filemd5 = md5(filename + ".tmp")
-                    os.remove(filename + ".tmp")
-                    if filemd5 == sinsmd5:
-                        print "\tUnnecessary File: " + gamefile
-                        #os.remove(filename)
-                    else:
-                        pass
-                        #subprocess.call(['wine', os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, os.path.join(basepath, gamefile), filename + ".base", 'txt'])
+                    datatype = getType(gamefile)
+                    if datatype == "entity" or datatype == "brushes" or datatype == "mesh" or datatype == "particle":
+                        print "checking " + gamefile
+                        if osname == "posix":
+                            subprocess.call(['wine', os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, filename, filename + ".tmp", 'bin'])
+                        else:
+                            subprocess.call([os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, filename, filename + ".tmp", 'bin'])
+                        filemd5 = md5(filename + ".tmp")
+                        os.remove(filename + ".tmp")
+                        if filemd5 == sinsmd5:
+                            print "\tUnnecessary File: " + gamefile
+                            #os.remove(filename)
+                        else:
+                            pass
+                            #subprocess.call(['wine', os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, os.path.join(basepath, gamefile), filename + ".base", 'txt'])
+
+def checkBin(directory):
+    # This was designed to convert the txt files to bin in an effort to identify ones that might have an issue
+    # It creates a tmp bin file and then deletes it.  If it gets stuck or throws an error - investigate checked file.
+    path = os.path.join(rootpath, directory)
+    osname = os.name
+    for filename in glob.glob(os.path.join(path, '*')):
+        gamefile = os.path.basename(filename)
+        datatype = getType(gamefile)
+        if datatype == "entity" or datatype == "brushes" or datatype == "mesh" or datatype == "particle":
+            print "checking " + gamefile
+            if osname == "posix":
+                subprocess.call(['wine', os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, filename, filename + ".tmp", 'bin'])
+            else:
+                subprocess.call([os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, filename, filename + ".tmp", 'bin'])
+            filemd5 = md5(filename + ".tmp")
+            os.remove(filename + ".tmp")
+        
+def getType(filename):
+    ext = os.path.splitext(filename)
+    return ext[1].replace(".", "")
 
 if len(sys.argv) > 1:
     rootpath = sys.argv[1]
@@ -57,7 +80,7 @@ if len(sys.argv) > 1:
         print "\nThe Mod directory '" + rootpath + " was not found."
         sys.exit()
 else:
-    print "\tUsage: simsmodcheck.py <moddirectory> --showunused --graphexport --skipbin"
+    print "\tUsage: simsmodcheck.py <moddirectory> --showunused --graphexport --skipbin --fullbin"
     sys.exit()
 
 if len(sys.argv) > 2:
@@ -69,6 +92,8 @@ if len(sys.argv) > 2:
             graph = True
         elif sys.argv[i] == "--skipbin":
             skipbin = True
+        elif sys.argv[i] == "--fullbin":
+            fullbin = True
         i += 1
 
 basegame = None
@@ -86,6 +111,14 @@ if not basegame:
 if verbose:
     print "\nNote: Not all dependencies have been identified and Binary files in the mod are not read.  Files listed as UNUSED may be referenced by these binary files or not yet identified.\n"
 
+if fullbin:
+    print '\n*** Full File Check (Create Bin as conversion check) ***'
+    print '\tNote: this process will create a temporary file and then delete it'
+    checkBin('Mesh')
+    checkBin('GameInfo')
+    checkBin('Particle')
+    checkBin('Window')
+    sys.exit()
 
 texturelist = []
 soundlist = []
