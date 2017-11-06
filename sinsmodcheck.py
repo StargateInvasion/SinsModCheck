@@ -7,9 +7,10 @@ import sys
 import hashlib
 import subprocess
 
-version = '1.10'
+version = '1.11'
 verbose = False
 graph = False
+skipbin = False
 
 def md5(fname):
     hash_md5 = hashlib.md5()
@@ -29,7 +30,7 @@ def baseDup(directory):
             if filemd5 == sinsmd5:
                 print "\tUnnecessary File: " + gamefile
                 #os.remove(filename)
-            elif directory != 'Texture' and directory != 'Sound':
+            elif not skipbin and directory != 'Texture' and directory != 'Sound':
                 fline = open(filename, "r").readline().rstrip().encode("hex").replace("efbbbf", "").decode("hex") #Remove Byte Order Mark
                 bline = open(os.path.join(basepath, gamefile), "r").readline().rstrip()
                 if fline == 'TXT' and bline == 'BIN':
@@ -56,7 +57,7 @@ if len(sys.argv) > 1:
         print "\nThe Mod directory '" + rootpath + " was not found."
         sys.exit()
 else:
-    print "\tUsage: simsmodcheck.py <moddirectory> --showunused --graphexport"
+    print "\tUsage: simsmodcheck.py <moddirectory> --showunused --graphexport --skipbin"
     sys.exit()
 
 if len(sys.argv) > 2:
@@ -66,6 +67,8 @@ if len(sys.argv) > 2:
             verbose = True
         elif sys.argv[i] == "--graphexport":
             graph = True
+        elif sys.argv[i] == "--skipbin":
+            skipbin = True
         i += 1
 
 basegame = None
@@ -85,6 +88,7 @@ if verbose:
 
 
 texturelist = []
+soundlist = []
 brushlist = []
 meshlist = []
 stringlist = []
@@ -99,6 +103,7 @@ basegamemeshes = []
 basegametextures = []
 basegameparticles = []
 basegameentites = []
+basegamesounds = []
 
 if basegame:
     path = os.path.join(basegame, 'Mesh')
@@ -113,6 +118,9 @@ if basegame:
     path = os.path.join(basegame, 'GameInfo')
     for filename in glob.glob(os.path.join(path, '*')):
         basegameentites.append(os.path.basename(filename).lower())
+    path = os.path.join(basegame, 'Sound')
+    for filename in glob.glob(os.path.join(path, '*')):
+        basegamesounds.append(os.path.basename(filename).lower())
 
 print "** Reviewing Entity Manifest **"
 i = 0
@@ -226,10 +234,6 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
             brushfilename = line.replace('textureName', "").replace('"', "").strip()
             if brushfilename != "" and not [brushfilename, filename] in texturelist:
                 texturelist.append([brushfilename, filename])
-        elif "textureName " in line:
-            brushfilename = line.replace('textureName', "").replace('"', "").strip()
-            if brushfilename != "" and not [brushfilename, filename] in texturelist:
-                texturelist.append([brushfilename, filename])
         elif 'title ' in line:
             stringname = line.replace('title', "").replace('"', "").strip()
             if stringname != "" and not [stringname, filename] in stringlist:
@@ -250,36 +254,8 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
             stringname = line.replace('toggleStateOnDescStringID', "").replace('"', "").strip()
             if stringname != "" and not [stringname, filename] in stringlist:
                 stringlist.append([stringname, filename])
-        elif 'muzzleEffectName ' in line:
-            particlename = line.replace('muzzleEffectName', "").replace('"', "").strip()
-            if particlename != "" and not [particlename, filename] in particlelist:
-                particlelist.append([particlename, filename])
-        elif 'hitEffectName ' in line:
-            particlename = line.replace('hitEffectName', "").replace('"', "").strip()
-            if particlename != "" and not [particlename, filename] in particlelist:
-                particlelist.append([particlename, filename])
-        elif 'projectileTravelEffectName ' in line:
-            particlename = line.replace('projectileTravelEffectName', "").replace('"', "").strip()
-            if particlename != "" and not [particlename, filename] in particlelist:
-                particlelist.append([particlename, filename])
-        elif 'missileTravelEffectName ' in line:
-            particlename = line.replace('missileTravelEffectName', "").replace('"', "").strip()
-            if particlename != "" and not [particlename, filename] in particlelist:
-                particlelist.append([particlename, filename])
-        elif 'smallEffectName ' in line:
-            particlename = line.replace('smallEffectName', "").replace('"', "").strip()
-            if particlename != "" and not [particlename, filename] in particlelist:
-                particlelist.append([particlename, filename])
-        elif 'mediumEffectName ' in line:
-            particlename = line.replace('mediumEffectName', "").replace('"', "").strip()
-            if particlename != "" and not [particlename, filename] in particlelist:
-                particlelist.append([particlename, filename])
-        elif 'largeEffectName ' in line:
-            particlename = line.replace('largeEffectName', "").replace('"', "").strip()
-            if particlename != "" and not [particlename, filename] in particlelist:
-                particlelist.append([particlename, filename])
-        elif 'ExhaustParticleSystemName ' in line:
-            particlename = line.replace('ExhaustParticleSystemName', "").replace('"', "").strip()
+        elif 'EffectName' in line:
+            particlename = line.strip().split()[1].replace('"', "").strip()
             if particlename != "" and not [particlename, filename] in particlelist:
                 particlelist.append([particlename, filename])
         elif 'entityDefName ' in line:
@@ -290,40 +266,12 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
             entityname = line.replace('buffType', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
-        elif 'ability:0 ' in line:
-            entityname = line.replace('ability:0', "").replace('"', "").strip()
+        elif 'ability:' in line:
+            entityname = line.strip().split()[1].replace('"', "")
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
-        elif 'ability:1 ' in line:
-            entityname = line.replace('ability:1', "").replace('"', "").strip()
-            if entityname != "" and not [entityname, filename] in entitylinked:
-                entitylinked.append([entityname, filename])
-        elif 'ability:2 ' in line:
-            entityname = line.replace('ability:2', "").replace('"', "").strip()
-            if entityname != "" and not [entityname, filename] in entitylinked:
-                entitylinked.append([entityname, filename])
-        elif 'ability:3 ' in line:
-            entityname = line.replace('ability:3', "").replace('"', "").strip()
-            if entityname != "" and not [entityname, filename] in entitylinked:
-                entitylinked.append([entityname, filename])
-        elif 'ability:4 ' in line:
-            entityname = line.replace('ability:4', "").replace('"', "").strip()
-            if entityname != "" and not [entityname, filename] in entitylinked:
-                entitylinked.append([entityname, filename])
-        elif 'squadTypeEntityDef:0 ' in line:
-            entityname = line.replace('squadTypeEntityDef:0', "").replace('"', "").strip()
-            if entityname != "" and not [entityname, filename] in entitylinked:
-                entitylinked.append([entityname, filename])
-        elif 'squadTypeEntityDef:1 ' in line:
-            entityname = line.replace('squadTypeEntityDef:1', "").replace('"', "").strip()
-            if entityname != "" and not [entityname, filename] in entitylinked:
-                entitylinked.append([entityname, filename])
-        elif 'squadTypeEntityDef:2 ' in line:
-            entityname = line.replace('squadTypeEntityDef:2', "").replace('"', "").strip()
-            if entityname != "" and not [entityname, filename] in entitylinked:
-                entitylinked.append([entityname, filename])
-        elif 'squadTypeEntityDef:3 ' in line:
-            entityname = line.replace('squadTypeEntityDef:3', "").replace('"', "").strip()
+        elif 'squadTypeEntityDef:' in line:
+            entityname = line.strip().split()[1].replace('"', "")
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
         elif 'UpgradeType ' in line:
@@ -346,16 +294,12 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
             entityname = line.replace('afterColonizeBuffType', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
-        elif 'randomMeshName ' in line:
-            meshname = line.replace('randomMeshName', "").replace('"', "").strip()
-            if meshname != "" and not [meshname, filename] in meshlist:
-                meshlist.append([meshname, filename])
-        elif 'ShieldMeshName ' in line:
-            meshname = line.replace('ShieldMeshName', "").replace('"', "").strip()
-            if meshname != "" and not [meshname, filename] in meshlist:
-                meshlist.append([meshname, filename])
         elif 'meshName ' in line:
-            meshname = line.replace('meshName', "").replace('"', "").strip()
+            meshname = line.strip().split()[1].replace('"', "").strip()
+            if meshname != "" and not [meshname, filename] in meshlist:
+                meshlist.append([meshname, filename])
+        elif 'MeshName' in line and ' "' in line:
+            meshname = line.strip().split()[1].replace('"', "").strip()
             if meshname != "" and not [meshname, filename] in meshlist:
                 meshlist.append([meshname, filename])
         elif line.strip().startswith("picture "):
@@ -366,34 +310,42 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
             brushname = line.replace("backdrop", "").replace('"', "").strip()
             if brushname != "" and not [brushname, filename] in brushlist:
                 brushlist.append([brushname, filename])
-        elif line.strip().startswith("tierIndicatorBackdrop "):
-            brushname = line.replace("tierIndicatorBackdrop", "").replace('"', "").strip()
+        elif line.strip().startswith("underlay "):
+            brushname = line.replace("underlay", "").replace('"', "").strip()
             if brushname != "" and not [brushname, filename] in brushlist:
                 brushlist.append([brushname, filename])
-        elif line.strip().startswith("hudIcon "):
-            brushname = line.replace("hudIcon", "").replace('"', "").strip()
+        elif line.strip().startswith("overlay "):
+            brushname = line.replace("overlay", "").replace('"', "").strip()
             if brushname != "" and not [brushname, filename] in brushlist:
                 brushlist.append([brushname, filename])
-        elif line.strip().startswith("smallHudIcon "):
-            brushname = line.replace("smallHudIcon", "").replace('"', "").strip()
+        elif 'Backdrop' in line and ' "' in line:
+            brushname = line.strip().split()[1].replace('"', "").strip()
             if brushname != "" and not [brushname, filename] in brushlist:
                 brushlist.append([brushname, filename])
-        elif line.strip().startswith("smallHudIcon "):
-            brushname = line.replace("smallHudIcon", "").replace('"', "").strip()
+        elif ' "' in line and 'Overlay' in line.split()[0]:
+            brushname = line.strip().split()[1].replace('"', "").strip()
             if brushname != "" and not [brushname, filename] in brushlist:
                 brushlist.append([brushname, filename])
-        elif line.strip().startswith("infoCardIcon "):
-            brushname = line.replace("infoCardIcon", "").replace('"', "").strip()
+        elif 'Icon' in line and ' "' in line:
+            brushname = line.strip().split()[1].replace('"', "").strip()
             if brushname != "" and not [brushname, filename] in brushlist:
                 brushlist.append([brushname, filename])
-        elif line.strip().startswith("mainViewIcon "):
-            brushname = line.replace("mainViewIcon", "").replace('"', "").strip()
-            if brushname != "" and not [brushname, filename] in brushlist:
-                brushlist.append([brushname, filename])  
-        elif line.strip().startswith("undetectedMainViewIcon "):
-            brushname = line.replace("undetectedMainViewIcon", "").replace('"', "").strip()
-            if brushname != "" and not [brushname, filename] in brushlist:
-                brushlist.append([brushname, filename])           
+        elif line.strip().startswith("sound "):
+            soundname = line.replace("sound", "").replace('"', "").strip()
+            if soundname != "" and not [soundname, filename] in soundlist:
+                soundlist.append([soundname, filename])
+        elif 'SoundID "' in line:
+            soundname = line.strip().split()[1].replace('"', "")
+            if soundname != "" and not [soundname, filename] in soundlist:
+                soundlist.append([soundname, filename])
+        elif line.strip().startswith('musicTheme '):
+            soundname = line.replace("musicTheme", "").replace('"', "").strip()
+            if soundname != "" and not [soundname, filename] in soundlist:
+                soundlist.append([soundname, filename])
+        elif line.strip().startswith('GameEventSound'):
+            soundname = line.strip().split()[1].replace('"', "")
+            if soundname != "" and not [soundname, filename] in soundlist:
+                soundlist.append([soundname, filename])
 
         if researchsubject:
             if 'pos [' in line:
@@ -486,6 +438,8 @@ for filename in glob.glob(os.path.join(path, '*.explosiondata')):
             if particlename != "" and not [particlename, filename] in particlelist:
                 particlelist.append([particlename, filename])
 
+soundlinks = []
+soundfilelinks = []
 print "** Reviewing Sound Counts **"
 for filename in glob.glob(os.path.join(path, '*.sounddata')):
     i = 0
@@ -495,6 +449,15 @@ for filename in glob.glob(os.path.join(path, '*.sounddata')):
             itemCount = int(line.strip().split()[1])
         elif line.startswith("effect") or line.startswith("music"):
             i = i + 1
+        elif line.strip().startswith("name "):
+            soundname = line.replace('name', "").replace('"', "").strip()
+            if soundname != "" and not [soundname, filename] in soundlinks:
+                soundlinks.append([soundname, filename])
+        elif line.strip().startswith("fileName "):
+            soundfile = line.replace('fileName', "").replace('"', "").strip()
+            if soundfile != "" and not [soundfile, filename] in soundfilelinks:
+                soundfilelinks.append([soundfile, filename])
+        
     if i != 0 and itemCount != i:
         print "\t" + filename
         print "\t\tNumEffects: " + str(itemCount) + ", Effect: " + str(i)
@@ -644,6 +607,12 @@ for filename in glob.glob(os.path.join(path, '*')):
             meshfilename = line.replace('MeshName ', "").replace('"', "").strip()
             if meshfilename != "" and not [meshfilename, filename] in meshlist:
                 meshlist.append([meshfilename, filename])
+
+soundfiles = []
+path = os.path.join(rootpath, 'Sound')
+for filename in glob.glob(os.path.join(path, '*')):
+    sound = os.path.basename(filename).lower()
+    soundfiles.append(sound)
 
 print "** Reviewing String Counts **"
 path = os.path.join(rootpath, 'String')
@@ -816,8 +785,9 @@ else:
                 test = True
                 break
         if not test:
-            pass
             #print "\tBrush not referenced in a plain text game file: " + brush[0]
+            pass
+            
 
 print "\n***** Invalid Entries Check *****"
 
@@ -881,6 +851,28 @@ for mesh in meshlist:
     if not test and not meshval in basegamemeshes:
         print '\t"' + str(mesh[0]) + '"' + ' listed in "' + str(mesh[1]).replace(rootpath, "") + '" does not appear to exist in Mesh folder.'
 
+
+print "** Referenced Non-existant Sounddata **"
+for sound in soundlist:
+    test = False
+    for itemlist in soundlinks:
+        if sound[0] == itemlist[0]:
+            test = True
+            break
+    if not test:
+        print '\t"' + str(sound[0]) + '"' + ' listed in "' + str(sound[1]).replace(rootpath, "") + '" does not have a sounddata entry.'
+
+
+print "** Referenced Non-existant Sound **"
+for sound in soundfilelinks:
+    test = False
+    for itemlist in soundfiles:
+        if sound[0].lower() == itemlist:
+            test = True
+            break
+    if not test and not sound[0].lower() in basegamesounds:
+        print '\t"' + str(sound[0]) + '"' + ' listed in "' + str(sound[1]).replace(rootpath, "") + '" does not appear to exist in Sound folder.'
+
 print "** Referenced Non-existant Particle **"
 for item in particlelist:
     test = False
@@ -904,7 +896,8 @@ for item in brushlist:
 
 if verbose and basegame:
     print '\n*** Unnecessary File Check (Dups with Base) ***'
-    print '\tNote: this process may create a temporary file to properly compare a game binary'
+    if not skipbin:
+        print '\tNote: this process may create a temporary file to properly compare a game binary'
     baseDup('Textures')
     baseDup('Sound')
     baseDup('Mesh')
