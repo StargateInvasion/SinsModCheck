@@ -7,7 +7,7 @@ import sys
 import hashlib
 import subprocess
 
-version = '1.11'
+version = '1.12'
 verbose = False
 graph = False
 skipbin = False
@@ -163,7 +163,11 @@ for line in open(os.path.join(rootpath, "entity.manifest")):
         itemCount = int(line.strip().split()[1])
     elif line.startswith("entityName"):
         i = i + 1
-        entitymanifest.append(line.replace("entityName", "").replace('"', "").strip())
+        entityval = line.replace("entityName", "").replace('"', "").strip()
+        if not entityval in entitymanifest:
+            entitymanifest.append(entityval)
+        else:
+            print "\tDuplicate entry in entity.manifest: " + entityval
 
 if i != 0 and itemCount != i:
     print "\tentity.manifest"
@@ -197,6 +201,8 @@ for filename in glob.glob(os.path.join(path, '*')):
             brushentry = line.replace('name ', "").replace('"', "").strip()
             if brushentry != "" and not [brushentry, filename] in brushentries:
                 brushentries.append([brushentry, filename])
+            elif [brushentry, filename] in brushentries:
+                print "\tDuplicate Brush entry: " + brushentry + " in " + filename
 
     if i != 0 and itemCount != i:
         print "\t" + filename
@@ -486,6 +492,8 @@ for filename in glob.glob(os.path.join(path, '*.sounddata')):
             soundname = line.replace('name', "").replace('"', "").strip()
             if soundname != "" and not [soundname, filename] in soundlinks:
                 soundlinks.append([soundname, filename])
+            elif [soundname, filename] in soundlinks:
+                print "\tDuplicate Sound entry: " + soundname + " in " + filename
         elif line.strip().startswith("fileName "):
             soundfile = line.replace('fileName', "").replace('"', "").strip()
             if soundfile != "" and not [soundfile, filename] in soundfilelinks:
