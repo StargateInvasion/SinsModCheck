@@ -238,7 +238,8 @@ goauldtime = 0
 goauldcost = 0
 path = os.path.join(rootpath, 'GameInfo')
 for filename in glob.glob(os.path.join(path, '*.entity')):
-    entitylist.append(os.path.basename(filename))
+    entityfilename = os.path.basename(filename)
+    entitylist.append(entityfilename)
     linecount = 0
     researchsubject = False
     researchpos = None
@@ -246,11 +247,19 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
     totaltime = 0
     totalcost = 0
     maxlevels = 0
+    playercount = 0
+    playercountentity = 0
     for line in open(filename):
         if linecount == 0 and line.startswith("BIN"):
-            binfiles.append(os.path.basename(filename))
+            binfiles.append(entityfilename)
             break
         linecount += 1
+        if entityfilename.startswith("Player") and line.strip().startswith("count "):
+            if playercountentity > 0 and playercount > 0 and playercountentity != playercount:
+                print "\t Found a count of " + str(playercount) + " but the entityDefName below it has a count of " + str(playercountentity) + " in " + entityfilename
+            playercount = int(line.split()[1])
+            playercountentity = 0
+            
         if 'entityType "ResearchSubject"' in line and 'ARTIFACT' not in filename:
             researchsubject = True
         elif "environmentMapName " in line:
@@ -293,11 +302,16 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
             stringname = line.replace('toggleStateOnDescStringID', "").replace('"', "").strip()
             if stringname != "" and not [stringname, filename] in stringlist:
                 stringlist.append([stringname, filename])
+        elif 'counterDescriptionStringID' in line:
+            stringname = line.replace('counterDescriptionStringID', "").replace('"', "").strip()
+            if stringname != "" and not [stringname, filename] in stringlist:
+                stringlist.append([stringname, filename])
         elif 'EffectName' in line:
             particlename = line.strip().split()[1].replace('"', "").strip()
             if particlename != "" and not [particlename, filename] in particlelist:
                 particlelist.append([particlename, filename])
         elif 'entityDefName ' in line:
+            playercountentity += 1
             entityname = line.replace('entityDefName', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
@@ -331,6 +345,18 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
                 entitylinked.append([entityname, filename])
         elif 'flagship ' in line:
             entityname = line.replace('afterColonizeBuffType', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+        elif 'entryVehicleType ' in line:
+            entityname = line.replace('entryVehicleType', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+        elif 'buffEntityModifierType ' in line:
+            entityname = line.replace('buffEntityModifierType', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+        elif 'buffTypeToQuery ' in line:
+            entityname = line.replace('buffTypeToQuery', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
         elif 'meshName ' in line:
