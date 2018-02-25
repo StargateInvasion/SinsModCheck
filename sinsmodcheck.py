@@ -7,7 +7,9 @@ import sys
 import hashlib
 import subprocess
 
-version = '1.12'
+basegameplaintext = "~/Documents/workspace/SinsRef/"
+
+version = '1.13'
 verbose = False
 graph = False
 skipbin = False
@@ -237,7 +239,25 @@ humancost = 0
 goauldtime = 0
 goauldcost = 0
 path = os.path.join(rootpath, 'GameInfo')
+
+modentities = []
 for filename in glob.glob(os.path.join(path, '*.entity')):
+    entityfilename = os.path.basename(filename)
+    modentities.append(entityfilename)
+
+def isModEntity(file):
+    global modentities
+    return file in modentities
+    
+
+def readFile(filename):
+    plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
+    global asurantime
+    global asurancost
+    global humantime
+    global humancost
+    global goauldtime
+    global goauldcost
     entityfilename = os.path.basename(filename)
     entitylist.append(entityfilename)
     linecount = 0
@@ -315,50 +335,68 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
             entityname = line.replace('entityDefName', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'buffType ' in line:
             entityname = line.replace('buffType', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'ability:' in line:
             entityname = line.strip().split()[1].replace('"', "")
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'squadTypeEntityDef:' in line:
             entityname = line.strip().split()[1].replace('"', "")
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
-        elif 'UpgradeType ' in line:
+                if not isModEntity(entityname + ".entity"):
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'UpgradeType ' in line and not 'linkedPlanetUpgradeType' in line:
             entityname = line.replace('UpgradeType', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'cargoShipType ' in line:
             entityname = line.replace('cargoShipType', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'Subject ' in line:
-            entityname = line.replace('Subject', "").replace('"', "").strip()
+            entityname = line.strip().split()[1].replace('"', "")
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'afterColonizeBuffType ' in line:
             entityname = line.replace('afterColonizeBuffType', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'flagship ' in line:
-            entityname = line.replace('afterColonizeBuffType', "").replace('"', "").strip()
+            entityname = line.strip().split()[1].replace('"', "")
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'entryVehicleType ' in line:
             entityname = line.replace('entryVehicleType', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
-        elif 'buffEntityModifierType ' in line:
-            entityname = line.replace('buffEntityModifierType', "").replace('"', "").strip()
-            if entityname != "" and not [entityname, filename] in entitylinked:
-                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'buffTypeToQuery ' in line:
             entityname = line.replace('buffTypeToQuery', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'meshName ' in line:
             meshname = line.strip().split()[1].replace('"', "").strip()
             if meshname != "" and not [meshname, filename] in meshlist:
@@ -470,6 +508,9 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
             elif "Goauld" in os.path.basename(filename):
                 goauldtime += totaltime * maxlevels /60
                 goauldcost += totalcost * maxlevels
+
+for filename in glob.glob(os.path.join(path, '*.entity')):
+    readFile(filename)
 
 if asurantime > 0:
     print "   ** Asuran Research Time: " + str(asurantime) + " minutes"
@@ -792,6 +833,10 @@ for filename in glob.glob(os.path.join(path, '*')):
             brushfilename = brushfilename.replace("-cl", "").replace("-da", "").replace("-nm", "").replace("-bm", "").strip()
             if brushfilename != "" and not [brushfilename, filename] in texturelist:
                 texturelist.append([brushfilename, filename])
+
+for entity in entitylinked:
+    if not str(entity[0] + ".entity") in entitymanifest:
+        print "\tEntity not referenced in the entity.manifest: " + entity[0]
 
 if not verbose:
     print "** Reviewing File Formats **"
