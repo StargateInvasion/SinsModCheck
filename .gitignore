@@ -5,3 +5,4 @@ desktop.ini
 graphedges.txt
 graphnodes.txt
 *.pyc
+entity.manifest

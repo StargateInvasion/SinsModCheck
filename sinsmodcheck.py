@@ -14,6 +14,8 @@ verbose = False
 graph = False
 skipbin = False
 fullbin = False
+buildman = False
+showcost = False
 
 def md5(fname):
     hash_md5 = hashlib.md5()
@@ -82,7 +84,7 @@ if len(sys.argv) > 1:
         print "\nThe Mod directory '" + rootpath + " was not found."
         sys.exit()
 else:
-    print "\tUsage: simsmodcheck.py <moddirectory> --showunused --graphexport --skipbin --fullbin"
+    print "\tUsage: simsmodcheck.py <moddirectory> --showunused --graphexport --skipbin --fullbin --manifest"
     sys.exit()
 
 if len(sys.argv) > 2:
@@ -96,6 +98,10 @@ if len(sys.argv) > 2:
             skipbin = True
         elif sys.argv[i] == "--fullbin":
             fullbin = True
+        elif sys.argv[i] == "--manifest":
+            buildman = True
+        elif sys.argv[i] == "--showcost":
+            showcost = True
         i += 1
 
 basegame = None
@@ -139,118 +145,26 @@ basegametextures = []
 basegameparticles = []
 basegameentites = []
 basegamesounds = []
-
-if basegame:
-    path = os.path.join(basegame, 'Mesh')
-    for filename in glob.glob(os.path.join(path, '*')):
-        basegamemeshes.append(os.path.basename(filename).lower().replace(".mesh", ""))
-    path = os.path.join(basegame, 'Textures')
-    for filename in glob.glob(os.path.join(path, '*')):
-        basegametextures.append(os.path.basename(filename).lower().replace(".tga", "").replace(".dds", ""))
-    path = os.path.join(basegame, 'Particle')
-    for filename in glob.glob(os.path.join(path, '*')):
-        basegameparticles.append(os.path.basename(filename).lower().replace(".particle", ""))
-    path = os.path.join(basegame, 'GameInfo')
-    for filename in glob.glob(os.path.join(path, '*')):
-        basegameentites.append(os.path.basename(filename).lower())
-    path = os.path.join(basegame, 'Sound')
-    for filename in glob.glob(os.path.join(path, '*')):
-        basegamesounds.append(os.path.basename(filename).lower())
-
-print "** Reviewing Entity Manifest **"
-i = 0
-itemCount = 0
-for line in open(os.path.join(rootpath, "entity.manifest")):
-    if "entityNameCount" in line:
-        itemCount = int(line.strip().split()[1])
-    elif line.startswith("entityName"):
-        i = i + 1
-        entityval = line.replace("entityName", "").replace('"', "").strip()
-        if not entityval in entitymanifest:
-            entitymanifest.append(entityval)
-        else:
-            print "\tDuplicate entry in entity.manifest: " + entityval
-
-if i != 0 and itemCount != i:
-    print "\tentity.manifest"
-    print "\t\tentityNameCount: " + str(itemCount) + ", entities: " + str(i)
-
-print "** Reviewing Brush Counts **"
-brushentries = []
-path = os.path.join(rootpath, 'Window')
-for filename in glob.glob(os.path.join(path, '*')):
-    i = 0
-    itemCount = 0
-    linecount = 0
-    for line in open(filename):
-        if linecount == 0 and line.startswith("BIN"):
-            binfiles.append(os.path.basename(filename))
-            break
-        linecount += 1
-        if "brushCount" in line:
-            itemCount = int(line.strip().split()[1])
-        elif "brush\r\n" in line or "brush\n" in line:
-            i = i + 1
-        if 'fileName ' in line:
-            brushfilename = line.replace('fileName', "").replace('"', "").strip()
-            if brushfilename != "" and not [brushfilename, filename] in texturelist:
-                texturelist.append([brushfilename, filename])
-        elif 'textureName ' in line:
-            brushfilename = line.replace('textureName', "").replace('"', "").strip()
-            if brushfilename != "" and not [brushfilename, filename] in texturelist:
-                texturelist.append([brushfilename, filename])
-        elif line.strip().startswith("name "):
-            brushentry = line.replace('name ', "").replace('"', "").strip()
-            if brushentry != "" and not [brushentry, filename] in brushentries:
-                brushentries.append([brushentry, filename])
-            elif [brushentry, filename] in brushentries:
-                print "\tDuplicate Brush entry: " + brushentry + " in " + filename
-
-    if i != 0 and itemCount != i:
-        print "\t" + filename
-        print "\t\tbrushCount: " + str(itemCount) + ", brushes: " + str(i)
-
-path = os.path.join(rootpath, 'Galaxy')
-for filename in glob.glob(os.path.join(path, '*')):
-    linecount = 0
-    for line in open(filename):
-        if linecount == 0 and line.startswith("BIN"):
-            binfiles.append(os.path.basename(filename))
-            break
-        linecount += 1
-        if "browsePictureName " in line:
-            brushfilename = line.replace('browsePictureName', "").replace('"', "").strip()
-            if brushfilename != "" and not [brushfilename, filename] in texturelist:
-                texturelist.append([brushfilename, filename])
-
-print "** Reviewing Entity Values **"
-researchtime = [40, 45, 50, 60, 75, 90, 105, 120]
-researchxtime = [5, 5, 5, 5, 10, 10, 10, 10]
-researchcredit = [400, 600, 800, 1000, 1200, 1400, 1600, 1800]
-researchxcredit = [100, 100, 100, 100, 100, 100, 100, 100]
-researchmetal = [0, 50, 100, 150, 200, 250, 300, 350]
-researchxmetal = [0, 25, 25, 25, 25, 25, 25, 25]
-researchcrystal = [25, 100, 175, 250, 325, 400, 475, 550]
-researchxcrystal = [25, 25, 25, 25, 25, 25, 25, 25]
-asurantime = 0
-asurancost = 0
-humantime = 0
-humancost = 0
-goauldtime = 0
-goauldcost = 0
-path = os.path.join(rootpath, 'GameInfo')
-
+soundlinks = []
+soundfilelinks = []
 modentities = []
+
+path = os.path.join(rootpath, 'GameInfo')
 for filename in glob.glob(os.path.join(path, '*.entity')):
     entityfilename = os.path.basename(filename)
-    modentities.append(entityfilename)
+    modentities.append(entityfilename.lower())
 
 def isModEntity(file):
     global modentities
-    return file in modentities
+    return file.lower() in modentities
     
+def notInMod(entity, file):
+    print "Entity not in Mod: " + entity + " via " + file
 
 def readFile(filename):
+    if not os.path.isfile(filename):
+        print "Couldn't find " + filename
+        return
     plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
     global asurantime
     global asurancost
@@ -269,6 +183,8 @@ def readFile(filename):
     maxlevels = 0
     playercount = 0
     playercountentity = 0
+    #print entityfilename
+    entityType = ""
     for line in open(filename):
         if linecount == 0 and line.startswith("BIN"):
             binfiles.append(entityfilename)
@@ -279,7 +195,19 @@ def readFile(filename):
                 print "\t Found a count of " + str(playercount) + " but the entityDefName below it has a count of " + str(playercountentity) + " in " + entityfilename
             playercount = int(line.split()[1])
             playercountentity = 0
-            
+        
+        if 'entityType "' in line:
+            entityType = line.replace('entityType', "").replace('"', "").strip()
+        if isModEntity(entityType + ".entity"):
+            #print "Entity Match: " + entityType + " via " + filename
+            entitylinked.append([entityType, filename])
+        elif os.path.isfile(os.path.join(plaintextpath, entityType + ".entity")):
+            notInMod(entityType, filename)
+            readFile(os.path.join(plaintextpath, entityType + ".entity"))
+        if entityType == "ResourceAsteroid":
+            entitylinked.append([entityfilename.replace(".entity", ""), filename])
+        elif entityType == "PipCloud":
+            entitylinked.append([entityfilename.replace(".entity", ""), filename])
         if 'entityType "ResearchSubject"' in line and 'ARTIFACT' not in filename:
             researchsubject = True
         elif "environmentMapName " in line:
@@ -330,72 +258,157 @@ def readFile(filename):
             particlename = line.strip().split()[1].replace('"', "").strip()
             if particlename != "" and not [particlename, filename] in particlelist:
                 particlelist.append([particlename, filename])
+        elif 'planetImpactEffectName' in line:
+            particlename = line.strip().split()[1].replace('"', "").strip()
+            if particlename != "" and not [particlename, filename] in particlelist:
+                particlelist.append([particlename, filename])
         elif 'entityDefName ' in line:
             playercountentity += 1
             entityname = line.replace('entityDefName', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
                 if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'ruinPlanetType' in line:
+            entityname = line.replace('ruinPlanetType', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'spaceMineType ' in line:
+            entityname = line.replace('spaceMineType', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'bonus "' in line and entityType == "Planet":
+            entityname = line.replace('bonus ', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'cannonShellType ' in line:
+            entityname = line.replace('cannonShellType', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
                     readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'buffType ' in line:
             entityname = line.replace('buffType', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
                 if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'frigateType ' in line:
+            entityname = line.replace('frigateType', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'buffToApplyOnImpact ' in line:
+            entityname = line.replace('buffToApplyOnImpact', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'fighterEntityDef ' in line:
+            entityname = line.replace('fighterEntityDef', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'postSpawnBuff ' in line:
+            entityname = line.replace('postSpawnBuff', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'type "' in line and (entityType == "Ability" or entityType == "Buff"):
+            entityname = line.replace('type', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
                     readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'ability:' in line:
             entityname = line.strip().split()[1].replace('"', "")
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
                 if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
                     readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'squadTypeEntityDef:' in line:
             entityname = line.strip().split()[1].replace('"', "")
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
                 if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'pactUnlockEntityDefName' in line:
+            entityname = line.replace('pactUnlockEntityDefName', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
                     readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'UpgradeType ' in line and not 'linkedPlanetUpgradeType' in line:
             entityname = line.replace('UpgradeType', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
                 if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
                     readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'cargoShipType ' in line:
             entityname = line.replace('cargoShipType', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
                 if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
                     readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'Subject ' in line:
             entityname = line.strip().split()[1].replace('"', "")
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
                 if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
                     readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'afterColonizeBuffType ' in line:
             entityname = line.replace('afterColonizeBuffType', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
                 if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
                     readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'flagship ' in line:
             entityname = line.strip().split()[1].replace('"', "")
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
                 if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
                     readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'entryVehicleType ' in line:
             entityname = line.replace('entryVehicleType', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
                 if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
                     readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'buffTypeToQuery ' in line:
             entityname = line.replace('buffTypeToQuery', "").replace('"', "").strip()
             if entityname != "" and not [entityname, filename] in entitylinked:
                 entitylinked.append([entityname, filename])
                 if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
                     readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'meshName ' in line:
             meshname = line.strip().split()[1].replace('"', "").strip()
@@ -449,8 +462,7 @@ def readFile(filename):
             soundname = line.strip().split()[1].replace('"', "")
             if soundname != "" and not [soundname, filename] in soundlist:
                 soundlist.append([soundname, filename])
-
-        if researchsubject:
+        if showcost and researchsubject and "Replicator_Research_Ability_Embargo.entity" not in filename:
             if 'pos [' in line:
                 researchpos = int(line.replace('pos [', "").strip()[0])
             if isinstance(researchpos, int):
@@ -509,6 +521,147 @@ def readFile(filename):
                 goauldtime += totaltime * maxlevels /60
                 goauldcost += totalcost * maxlevels
 
+if basegame:
+    path = os.path.join(basegame, 'Mesh')
+    for filename in glob.glob(os.path.join(path, '*')):
+        basegamemeshes.append(os.path.basename(filename).lower().replace(".mesh", ""))
+    path = os.path.join(basegame, 'Textures')
+    for filename in glob.glob(os.path.join(path, '*')):
+        basegametextures.append(os.path.basename(filename).lower().replace(".tga", "").replace(".dds", ""))
+    path = os.path.join(basegame, 'Particle')
+    for filename in glob.glob(os.path.join(path, '*')):
+        basegameparticles.append(os.path.basename(filename).lower().replace(".particle", ""))
+    path = os.path.join(basegame, 'GameInfo')
+    for filename in glob.glob(os.path.join(path, '*')):
+        basegameentites.append(os.path.basename(filename).lower())
+    path = os.path.join(basegame, 'Sound')
+    for filename in glob.glob(os.path.join(path, '*')):
+        basegamesounds.append(os.path.basename(filename).lower())
+
+print "** Reviewing Entity Manifest **"
+i = 0
+itemCount = 0
+for line in open(os.path.join(rootpath, "entity.manifest")):
+    if "entityNameCount" in line:
+        itemCount = int(line.strip().split()[1])
+    elif line.startswith("entityName"):
+        i = i + 1
+        entityval = line.replace("entityName", "").replace('"', "").strip()
+        if not entityval in entitymanifest:
+            entitymanifest.append(entityval)
+        else:
+            print "\tDuplicate entry in entity.manifest: " + entityval
+
+
+if i != 0 and itemCount != i:
+    print "\tentity.manifest"
+    print "\t\tentityNameCount: " + str(itemCount) + ", entities: " + str(i)
+
+print "** Reviewing Brush Counts **"
+brushentries = []
+path = os.path.join(rootpath, 'Window')
+for filename in glob.glob(os.path.join(path, '*')):
+    i = 0
+    itemCount = 0
+    linecount = 0
+    for line in open(filename):
+        if linecount == 0 and line.startswith("BIN"):
+            binfiles.append(os.path.basename(filename))
+            break
+        linecount += 1
+        if "brushCount" in line:
+            itemCount = int(line.strip().split()[1])
+        elif "brush\r\n" in line or "brush\n" in line:
+            i = i + 1
+        plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
+        if 'fileName ' in line:
+            brushfilename = line.replace('fileName', "").replace('"', "").strip()
+            if brushfilename != "" and not [brushfilename, filename] in texturelist:
+                texturelist.append([brushfilename, filename])
+        elif 'textureName ' in line:
+            brushfilename = line.replace('textureName', "").replace('"', "").strip()
+            if brushfilename != "" and not [brushfilename, filename] in texturelist:
+                texturelist.append([brushfilename, filename])
+        elif line.strip().startswith("name "):
+            brushentry = line.replace('name ', "").replace('"', "").strip()
+            if brushentry != "" and not [brushentry, filename] in brushentries:
+                brushentries.append([brushentry, filename])
+            elif [brushentry, filename] in brushentries:
+                print "\tDuplicate Brush entry: " + brushentry + " in " + filename
+        elif line.strip().startswith("sharedTech") and '"' in line:
+            entityname = line.strip().split()[1].replace('"', "")
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif line.strip().startswith("sharedCapitalShip") and '"' in line:
+            entityname = line.strip().split()[1].replace('"', "")
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif line.strip().startswith("leftFactionTech") and '"' in line:
+            entityname = line.strip().split()[1].replace('"', "")
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif line.strip().startswith("rightFactionTech") and '"' in line:
+            entityname = line.strip().split()[1].replace('"', "")
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+
+    if i != 0 and itemCount != i:
+        print "\t" + filename
+        print "\t\tbrushCount: " + str(itemCount) + ", brushes: " + str(i)
+
+path = os.path.join(rootpath, 'Galaxy')
+for filename in glob.glob(os.path.join(path, '*')):
+    linecount = 0
+    for line in open(filename):
+        if linecount == 0 and line.startswith("BIN"):
+            binfiles.append(os.path.basename(filename))
+            break
+        linecount += 1
+        if "browsePictureName " in line:
+            brushfilename = line.replace('browsePictureName', "").replace('"', "").strip()
+            if brushfilename != "" and not [brushfilename, filename] in texturelist:
+                texturelist.append([brushfilename, filename])
+
+print "** Reviewing Entity Values **"
+researchtime = [40, 45, 50, 60, 75, 90, 105, 120]
+researchxtime = [5, 5, 5, 5, 10, 10, 10, 10]
+researchcredit = [400, 600, 800, 1000, 1200, 1400, 1600, 1800]
+researchxcredit = [100, 100, 100, 100, 100, 100, 100, 100]
+researchmetal = [0, 50, 100, 150, 200, 250, 300, 350]
+researchxmetal = [0, 25, 25, 25, 25, 25, 25, 25]
+researchcrystal = [25, 100, 175, 250, 325, 400, 475, 550]
+researchxcrystal = [25, 25, 25, 25, 25, 25, 25, 25]
+asurantime = 0
+asurancost = 0
+humantime = 0
+humancost = 0
+goauldtime = 0
+goauldcost = 0
+path = os.path.join(rootpath, 'GameInfo')
+
+manualentry = ["BuffDecloakMineForMovement","BuffNeutralCapturableEntity","BuffRecentlyColonized",
+    "PLANETMODULE_TECHORBITALCRYSTALEXTRACTOR", "PLANETMODULE_TECHORBITALMETALEXTRACTOR",
+    "AbilityMinorFactionTradeCrystalForMetal", "AbilityMinorFactionTradeMetalForCrystal",
+    "Goauld_BuffCruiser_SlowPopulationGrowthSelf", "Human_BuffCruiser_SlowPopulationGrowthSelf"]
+for entityname in manualentry:
+    if entityname != "" and not [entityname, "ManualEntry"] in entitylinked:
+        entitylinked.append([entityname, "ManualEntry"])
+        if not isModEntity(entityname + ".entity"):
+            notInMod(entityname, "ManualEntry")
+            readFile(os.path.join(plaintextpath, entityname + ".entity"))    
+
 for filename in glob.glob(os.path.join(path, '*.entity')):
     readFile(filename)
 
@@ -522,7 +675,82 @@ if goauldtime > 0:
     print "   ** Goauld Research Time: " + str(goauldtime) + " minutes"
     print "   ** Goauld Research Credits: " + str(goauldcost)
 
+for filename in glob.glob(os.path.join(path, '*.randomeventdefs')):
+    plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
+    for line in open(filename):
+        if "spawnEntity " in line:
+            entityname = line.replace('spawnEntity', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif "excludedSpawnLocation " in line:
+            entityname = line.replace('excludedSpawnLocation', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif "buff " in line:
+            entityname = line.replace('buff', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+
+
+for filename in glob.glob(os.path.join(path, '*.starscapedata')):
+    plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
+    for line in open(filename):
+        if 'starsMesh ' in line:
+            meshname = line.strip().split()[1].replace('"', "").strip()
+            if meshname != "" and not [meshname, filename] in meshlist:
+                meshlist.append([meshname, filename])
+
+for filename in glob.glob(os.path.join(path, '*.musicdata')):
+    plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
+    for line in open(filename):
+        if "musicTheme" in line:
+            soundname = line.replace('musicTheme', "").replace('"', "").strip()
+            if soundname != "" and not [soundname, filename] in soundlinks:
+                soundlinks.append([soundname, filename])
+
+for filename in glob.glob(os.path.join(path, '*.coronadata')):
+    plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
+    for line in open(filename):
+        if "textureName" in line:
+            brushfilename = line.replace('textureName', "").replace('"', "").strip()
+            if brushfilename != "" and not [brushfilename, filename] in texturelist:
+                texturelist.append([brushfilename, filename])
+
+for filename in glob.glob(os.path.join(path, '*.lensflaredata')):
+    plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
+    for line in open(filename):
+        if "textureName" in line:
+            brushfilename = line.replace('textureName', "").replace('"', "").strip()
+            if brushfilename != "" and not [brushfilename, filename] in texturelist:
+                texturelist.append([brushfilename, filename])
+
+for filename in glob.glob(os.path.join(path, '*.starscapedata')):
+    plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
+    for line in open(filename):
+        if "starTextureName" in line:
+            brushfilename = line.strip().split()[1].replace('"', "").strip()
+            if brushfilename != "" and not [brushfilename, filename] in texturelist:
+                texturelist.append([brushfilename, filename])
+
+for filename in glob.glob(os.path.join(path, '*.renderingDef')):
+    plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
+    for line in open(filename):
+        if "textureName " in line:
+            brushfilename = line.replace('textureName', "").replace('"', "").strip()
+            if brushfilename != "" and not [brushfilename, filename] in texturelist:
+                texturelist.append([brushfilename, filename])
+
 for filename in glob.glob(os.path.join(path, '*.constants')):
+    plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
     for line in open(filename):
         if "LevelUpEffectName " in line:
             particlename = line.replace('LevelUpEffectName', "").replace('"', "").strip()
@@ -536,6 +764,33 @@ for filename in glob.glob(os.path.join(path, '*.constants')):
             particlename = line.replace('effectName', "").replace('"', "").strip()
             if particlename != "" and not [particlename, filename] in particlelist:
                 particlelist.append([particlename, filename])
+        elif 'type "' in line:
+            entityname = line.replace('type', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'QuestDefName ' in line:
+            entityname = line.replace('QuestDefName', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'ability:' in line:
+            entityname = line.strip().split()[1].replace('"', "")
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'FactionName' in line:
+            stringname = line.replace('FactionName', "").replace('"', "").strip()
+            if stringname != "" and not [stringname, filename] in stringlist:
+                stringlist.append([stringname, filename])
+
+
 
 for filename in glob.glob(os.path.join(path, '*.explosiondata')):
     for line in open(filename):
@@ -544,8 +799,7 @@ for filename in glob.glob(os.path.join(path, '*.explosiondata')):
             if particlename != "" and not [particlename, filename] in particlelist:
                 particlelist.append([particlename, filename])
 
-soundlinks = []
-soundfilelinks = []
+
 print "** Reviewing Sound Counts **"
 for filename in glob.glob(os.path.join(path, '*.sounddata')):
     i = 0
@@ -620,6 +874,7 @@ for filename in glob.glob(os.path.join(path, '*.asteroidDef')):
 
 print "** Reviewing Galaxy Scenario **"
 for filename in glob.glob(os.path.join(path, '*.galaxyScenarioDef')):
+    plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
     starTypeCount = 0
     starType = 0
     planetTypeCount = 0
@@ -669,6 +924,21 @@ for filename in glob.glob(os.path.join(path, '*.galaxyScenarioDef')):
             validThemeGroups = int(line.strip().split()[1])
         elif line.startswith("themeGroup"):
             themeGroup = themeGroup + 1
+        elif 'entityDefName ' in line:
+            entityname = line.replace('entityDefName', "").replace('"', "").strip()
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'inGameName ' in line:
+            stringname = line.replace('inGameName', "").replace('"', "").strip()
+            if stringname != "" and not [stringname, filename] in stringlist:
+                stringlist.append([stringname, filename])
+        elif 'designStringId' in line:
+            stringname = line.replace('designStringId', "").replace('"', "").strip()
+            if stringname != "" and not [stringname, filename] in stringlist:
+                stringlist.append([stringname, filename])
 
     if starType != 0 and starTypeCount != starType:
         print "\t\tGalaxyScenarioDef: (starTypeCount: " + str(starTypeCount) + ", starType: " + str(starType) + ")"
@@ -693,6 +963,11 @@ for filename in glob.glob(os.path.join(path, '*.galaxyScenarioDef')):
     if themeGroup != 0 and validThemeGroups != themeGroup:
         print "\t\tGalaxyScenarioDef: (validThemeGroups: " + str(validThemeGroups) + ", themeGroup: " + str(
             themeGroup) + ")"
+
+for filename in glob.glob(os.path.join(path, '*')):
+    if not filename.endswith(".entity"):
+        #print "NonEntity: " + filename
+        pass
 
 path = os.path.join(rootpath, 'Particle')
 for filename in glob.glob(os.path.join(path, '*')):
@@ -834,8 +1109,11 @@ for filename in glob.glob(os.path.join(path, '*')):
             if brushfilename != "" and not [brushfilename, filename] in texturelist:
                 texturelist.append([brushfilename, filename])
 
+entitymanlc = []
+for entity in entitymanifest:
+    entitymanlc.append(entity.lower())
 for entity in entitylinked:
-    if not str(entity[0] + ".entity") in entitymanifest:
+    if not str(entity[0] + ".entity").lower() in entitymanlc:
         print "\tEntity not referenced in the entity.manifest: " + entity[0]
 
 if not verbose:
@@ -898,8 +1176,8 @@ else:
                 break
         if not test:
             #print "\tBrush not referenced in a plain text game file: " + brush[0]
-            pass
-            
+            pass       
+
 
 print "\n***** Invalid Entries Check *****"
 
@@ -912,6 +1190,20 @@ for entity in entitymanifest:
             break
     if not test and not entity.lower() in basegameentites:
         print '\t"' + entity + '"' + ' listed in the entity.manifest does not appear to exist.'
+
+if buildman:
+    print "** Write entity.manifest **"
+    entitywrite = []
+    for entity in entitylinked:
+        if entity[0] + '.entity' not in entitywrite:
+            entitywrite.append(entity[0] + '.entity')
+    entitywrite.sort()
+    file = open("entity.manifest", "w")
+    file.write('TXT\n')
+    file.write('entityNameCount ' + str(len(entitywrite)) + '\n')
+    for entity in entitywrite:
+        file.write('entityName "' + entity + '"\n')
+    file.close()
 
 print "** Referenced Non-existant Textures **"
 for tex in texturelist:
