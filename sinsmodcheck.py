@@ -9,7 +9,7 @@ import subprocess
 
 basegameplaintext = "~/Documents/workspace/SinsRef/"
 
-version = '1.13'
+version = '1.14'
 verbose = False
 graph = False
 skipbin = False
@@ -1178,6 +1178,19 @@ else:
             #print "\tBrush not referenced in a plain text game file: " + brush[0]
             pass       
 
+if buildman:
+    print "\n** Write entity.manifest **"
+    entitywrite = []
+    for entity in entitylinked:
+        if entity[0] + '.entity' not in entitywrite:
+            entitywrite.append(entity[0] + '.entity')
+    entitywrite.sort()
+    file = open("entity.manifest", "w")
+    file.write('TXT\n')
+    file.write('entityNameCount ' + str(len(entitywrite)) + '\n')
+    for entity in entitywrite:
+        file.write('entityName "' + entity + '"\n')
+    file.close()
 
 print "\n***** Invalid Entries Check *****"
 
@@ -1191,19 +1204,6 @@ for entity in entitymanifest:
     if not test and not entity.lower() in basegameentites:
         print '\t"' + entity + '"' + ' listed in the entity.manifest does not appear to exist.'
 
-if buildman:
-    print "** Write entity.manifest **"
-    entitywrite = []
-    for entity in entitylinked:
-        if entity[0] + '.entity' not in entitywrite:
-            entitywrite.append(entity[0] + '.entity')
-    entitywrite.sort()
-    file = open("entity.manifest", "w")
-    file.write('TXT\n')
-    file.write('entityNameCount ' + str(len(entitywrite)) + '\n')
-    for entity in entitywrite:
-        file.write('entityName "' + entity + '"\n')
-    file.close()
 
 print "** Referenced Non-existant Textures **"
 for tex in texturelist:
