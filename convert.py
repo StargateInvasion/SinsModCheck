@@ -13,6 +13,7 @@ from shutil import copyfile
 basegame = None
 inputdir = None
 output = None
+fileformat = 'txt'
 
 def mkdir_p(path):
     try:
@@ -42,9 +43,9 @@ def checkBin(inputpath, directory):
         if datatype == "entity" or datatype == "brushes" or datatype == "mesh" or datatype == "particle":
             print "converting " + gamefile
             if osname == "posix":
-                subprocess.call(['wine', os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, filename, outfile, 'txt'])
+                subprocess.call(['wine', os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, filename, outfile, fileformat])
             else:
-                subprocess.call([os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, filename, outfile, 'txt'])
+                subprocess.call([os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, filename, outfile, fileformat])
         else:
             print "copying " + gamefile
             copyfile(filename, outfile)
@@ -56,6 +57,8 @@ if len(sys.argv) > 1:
             output = sys.argv[i+1]
         elif sys.argv[i] == "-i" and len(sys.argv) > i:
             inputdir = sys.argv[i+1]
+        elif sys.argv[i] == "bin":
+            fileformat = 'bin'
         i += 1
     if not basegame:
         if os.path.isdir("C:\Program Files (x86)\Steam\steamapps\common\Sins of a Solar Empire Rebellion"):
@@ -82,6 +85,7 @@ if len(sys.argv) > 1:
             outfile = os.path.join(output, gamefile)
             copyfile(filename, outfile)
 else:
-    print "Usage: convert.py -i <inputdirectory> -o <outputdirectory>"
+    print "Usage: convert.py -i <inputdirectory> -o <outputdirectory> [txt|bin]"
     print "\tInput Directory will default to Sins basegame path if -i not specified"
+    print "\tConversion type will default to txt, meaning bin->txt.  bin will convert txt->bin."
     sys.exit()
