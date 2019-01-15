@@ -7,15 +7,16 @@ import sys
 import hashlib
 import subprocess
 
-basegameplaintext = "~/Documents/workspace/SinsRef/"
+basegameplaintext = "~/Documents/workspace/SinsRef/Rebellion"
 
-version = '1.14'
+version = '1.15'
 verbose = False
 graph = False
 skipbin = False
 fullbin = False
 buildman = False
 showcost = False
+excludebase = False
 
 def md5(fname):
     hash_md5 = hashlib.md5()
@@ -102,6 +103,8 @@ if len(sys.argv) > 2:
             buildman = True
         elif sys.argv[i] == "--showcost":
             showcost = True
+        elif sys.argv[i] == "--excludebase":
+            excludebase = True
         i += 1
 
 basegame = None
@@ -113,7 +116,7 @@ elif os.path.isdir(os.path.expanduser("~/.wine/drive_c/Program Files (x86)/Steam
     basegame = os.path.expanduser("~/.wine/drive_c/Program Files (x86)/Steam/steamapps/common/Sins of a Solar Empire Rebellion")
 
 
-print "\n***** Sins of Solar Empire Mod File Verifcation " + version + " *****"
+print "\n***** Sins of Solar Empire Mod File Verification " + version + " *****"
 if not basegame:
     print "\nThe Sins of a Solar Empire Rebellion base game was not found.  The script may identify items that are missing in the mod that could default to the base game.  Modify the script to include your basegame path.\n"
 if verbose:
@@ -522,21 +525,23 @@ def readFile(filename):
                 goauldcost += totalcost * maxlevels
 
 if basegame:
+    if excludebase:
+        path = os.path.join(basegame, 'Textures')
+        for filename in glob.glob(os.path.join(path, '*')):
+            basegametextures.append(os.path.basename(filename).lower().replace(".tga", "").replace(".dds", ""))
+        path = os.path.join(basegame, 'Particle')
+        for filename in glob.glob(os.path.join(path, '*')):
+            basegameparticles.append(os.path.basename(filename).lower().replace(".particle", ""))
+        path = os.path.join(basegame, 'Sound')
+        for filename in glob.glob(os.path.join(path, '*')):
+            basegamesounds.append(os.path.basename(filename).lower())
     path = os.path.join(basegame, 'Mesh')
     for filename in glob.glob(os.path.join(path, '*')):
         basegamemeshes.append(os.path.basename(filename).lower().replace(".mesh", ""))
-    path = os.path.join(basegame, 'Textures')
-    for filename in glob.glob(os.path.join(path, '*')):
-        basegametextures.append(os.path.basename(filename).lower().replace(".tga", "").replace(".dds", ""))
-    path = os.path.join(basegame, 'Particle')
-    for filename in glob.glob(os.path.join(path, '*')):
-        basegameparticles.append(os.path.basename(filename).lower().replace(".particle", ""))
     path = os.path.join(basegame, 'GameInfo')
     for filename in glob.glob(os.path.join(path, '*')):
         basegameentites.append(os.path.basename(filename).lower())
-    path = os.path.join(basegame, 'Sound')
-    for filename in glob.glob(os.path.join(path, '*')):
-        basegamesounds.append(os.path.basename(filename).lower())
+
 
 print "** Reviewing Entity Manifest **"
 i = 0
@@ -658,7 +663,7 @@ manualentry = ["BuffDecloakMineForMovement","BuffNeutralCapturableEntity","BuffR
 for entityname in manualentry:
     if entityname != "" and not [entityname, "ManualEntry"] in entitylinked:
         entitylinked.append([entityname, "ManualEntry"])
-        if not isModEntity(entityname + ".entity"):
+        if not isModEntity(entityname + ".entity") and "SlowPopulationGrowthSelf" not in entityname:
             notInMod(entityname, "ManualEntry")
             readFile(os.path.join(plaintextpath, entityname + ".entity"))    
 
@@ -798,6 +803,10 @@ for filename in glob.glob(os.path.join(path, '*.explosiondata')):
             particlename = line.replace('particleSystemName', "").replace('"', "").strip()
             if particlename != "" and not [particlename, filename] in particlelist:
                 particlelist.append([particlename, filename])
+        elif "sound " in line:
+            soundname = line.replace("sound", "").replace('"', "").strip()
+            if soundname != "" and not [soundname, filename] in soundlist:
+                soundlist.append([soundname, filename])
 
 
 print "** Reviewing Sound Counts **"
