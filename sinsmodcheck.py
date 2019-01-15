@@ -116,7 +116,7 @@ elif os.path.isdir(os.path.expanduser("~/.wine/drive_c/Program Files (x86)/Steam
     basegame = os.path.expanduser("~/.wine/drive_c/Program Files (x86)/Steam/steamapps/common/Sins of a Solar Empire Rebellion")
 
 
-print "\n***** Sins of Solar Empire Mod File Verification " + version + " *****"
+print "\n***** Sins of Solar Empire Mod File Verifcation " + version + " *****"
 if not basegame:
     print "\nThe Sins of a Solar Empire Rebellion base game was not found.  The script may identify items that are missing in the mod that could default to the base game.  Modify the script to include your basegame path.\n"
 if verbose:
@@ -166,7 +166,7 @@ def notInMod(entity, file):
 
 def readFile(filename):
     if not os.path.isfile(filename):
-        print "Couldn't find " + filename
+        print "\tCouldn't find " + filename
         return
     plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
     global asurantime
@@ -525,7 +525,7 @@ def readFile(filename):
                 goauldcost += totalcost * maxlevels
 
 if basegame:
-    if excludebase:
+    if not excludebase:
         path = os.path.join(basegame, 'Textures')
         for filename in glob.glob(os.path.join(path, '*')):
             basegametextures.append(os.path.basename(filename).lower().replace(".tga", "").replace(".dds", ""))
@@ -830,7 +830,7 @@ for filename in glob.glob(os.path.join(path, '*.sounddata')):
                 soundfilelinks.append([soundfile, filename])
         
     if i != 0 and itemCount != i:
-        print "\t" + filename
+        print "\tIncorrect Count: " + filename
         print "\t\tNumEffects: " + str(itemCount) + ", Effect: " + str(i)
 
 print "** Reviewing Skybox Counts **"

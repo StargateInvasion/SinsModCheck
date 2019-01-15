@@ -77,13 +77,15 @@ if len(sys.argv) > 1:
     print "Reading directory: " + inputdir
     for filename in glob.glob(os.path.join(inputdir, '*')):
         if os.path.isdir(filename):
-            gamedir = os.path.basename(filename)
-            checkBin(inputdir, gamedir)
+            if not filename.endswith("Galaxy Forge") and not filename.endswith("Particle Forge") and not filename.endswith("font") and not filename.endswith("ConvertXSI") and not filename.endswith("_CommonRedist"):
+                gamedir = os.path.basename(filename)
+                checkBin(inputdir, gamedir)
         else:
-            gamefile = os.path.basename(filename)
-            print "copying " + gamefile
-            outfile = os.path.join(output, gamefile)
-            copyfile(filename, outfile)
+            if not filename.endswith(".exe") and not filename.endswith(".dll") and not filename.endswith(".pdf"):
+                gamefile = os.path.basename(filename)
+                print "copying " + gamefile
+                outfile = os.path.join(output, gamefile)
+                copyfile(filename, outfile)
 else:
     print "Usage: convert.py -i <inputdirectory> -o <outputdirectory> [txt|bin]"
     print "\tInput Directory will default to Sins basegame path if -i not specified"
