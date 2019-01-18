@@ -60,6 +60,9 @@ if len(sys.argv) > 1:
         elif sys.argv[i] == "bin":
             fileformat = 'bin'
         i += 1
+    if not inputdir and not output and len(sys.argv) > 1:
+        inputdir = sys.argv[1]
+        output = sys.argv[2]
     if not basegame:
         if os.path.isdir("C:\Program Files (x86)\Steam\steamapps\common\Sins of a Solar Empire Rebellion"):
             basegame = "C:\Program Files (x86)\Steam\steamapps\common\Sins of a Solar Empire Rebellion"
