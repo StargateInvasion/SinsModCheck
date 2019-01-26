@@ -609,6 +609,13 @@ for filename in glob.glob(os.path.join(path, '*')):
                 brushentries.append([brushentry, filename])
             elif [brushentry, filename] in brushentries:
                 print "\tDuplicate Brush entry: " + brushentry + " in " + filename
+        elif line.strip().startswith("leftPlayer ") or line.strip().startswith("rightPlayer "):
+            entityname = line.strip().split()[1].replace('"', "")
+            if entityname != "" and not [entityname, filename] in entitylinked:
+                entitylinked.append([entityname, filename])
+                if not isModEntity(entityname + ".entity"):
+                    notInMod(entityname, filename)
+                    readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif line.strip().startswith("sharedTech") and '"' in line:
             entityname = line.strip().split()[1].replace('"', "")
             if entityname != "" and not [entityname, filename] in entitylinked:
