@@ -265,6 +265,10 @@ def readFile(filename):
                 particlename = line.strip().split()[1].replace('"', "").strip()
                 if particlename != "" and not [particlename, filename] in particlelist:
                     particlelist.append([particlename, filename])
+            elif 'meshNameIncreasedEffectName' in line or 'meshNameDecreasedEffectName' in line:
+                particlename = line.strip().split()[1].replace('"', "").strip()
+                if particlename != "" and not [particlename, filename] in particlelist:
+                    particlelist.append([particlename, filename])
             elif 'planetImpactEffectName' in line:
                 particlename = line.strip().split()[1].replace('"', "").strip()
                 if particlename != "" and not [particlename, filename] in particlelist:
