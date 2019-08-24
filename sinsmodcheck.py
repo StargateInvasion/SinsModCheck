@@ -136,8 +136,9 @@ texturelist = []
 soundlist = []
 brushlist = []
 meshlist = []
-stringlist = []
 meshfiles = []
+meshgroup = []
+stringlist = []
 entitymanifest = []
 entitylist = []
 entitylinked = []
@@ -191,6 +192,8 @@ def readFile(filename):
     playercountentity = 0
     #print entityfilename
     entityType = ""
+    shieldmesh = ""
+    unitmesh = ""
     with open(filename, 'r+') as f:
         for line in f:
             if linecount == 0 and line.startswith("BIN"):
@@ -435,12 +438,17 @@ def readFile(filename):
                         readFile(os.path.join(plaintextpath, entityname + ".entity"))
             elif 'meshName ' in line:
                 meshname = line.strip().split()[1].replace('"', "").strip()
-                if meshname != "" and not [meshname, filename] in meshlist:
-                    meshlist.append([meshname, filename])
+                if meshname != "":
+                    unitmesh = meshname
+                    if not [meshname, filename] in meshlist:
+                        meshlist.append([meshname, filename])
             elif 'MeshName' in line and ' "' in line:
                 meshname = line.strip().split()[1].replace('"', "").strip()
-                if meshname != "" and not [meshname, filename] in meshlist:
-                    meshlist.append([meshname, filename])
+                if meshname != "":
+                    if 'ShieldMeshName' in line:
+                        shieldmesh = meshname
+                    if not [meshname, filename] in meshlist:
+                        meshlist.append([meshname, filename])
             elif line.strip().startswith("picture "):
                 brushname = line.replace("picture", "").replace('"', "").strip()
                 if brushname != "" and not [brushname, filename] in brushlist:
@@ -543,7 +551,10 @@ def readFile(filename):
                 elif "Goauld" in os.path.basename(filename):
                     goauldtime += totaltime * maxlevels /60
                     goauldcost += totalcost * maxlevels
-
+    if len(shieldmesh) > 0 and len(unitmesh) > 0:
+        meshgroup.append({'unit': unitmesh, 'entity': entityfilename.replace(".entity", ""), 'shield': shieldmesh, 'size': 0})
+    elif len(unitmesh) > 0:
+        meshgroup.append({'unit': unitmesh, 'entity': entityfilename.replace(".entity", ""), 'shield': 'none', 'size': 0})
 if basegame:
     if not excludebase:
         path = os.path.join(basegame, 'Textures')
@@ -1070,6 +1081,7 @@ for filename in glob.glob(os.path.join(path, '*')):
         if linecount == 0 and line.startswith("BIN"):
             binfiles.append(os.path.basename(filename))
         linecount += 1
+
         if "NumPoints" in line:
             NumPoints = int(line.strip().split()[1])
         elif "Point\r\n" in line or "Point\n" in line:
@@ -1122,7 +1134,49 @@ for filename in glob.glob(os.path.join(path, '*')):
         print "\t" + filename
         print "\t\tNumTriangles: " + str(NumTriangles) + ", Triangles: " + str(t)
 
-print "** Reviewing Squadrons **"
+print "** Reviewing Mesh Sizes **"
+mainmesh = []
+for group in meshgroup:
+    if not 'Cosmetic' in group.get('entity'):
+        meshfile = os.path.join(rootpath, 'Mesh', group.get('unit') + ".mesh")
+        if not os.path.isfile(meshfile):
+            meshfile = os.path.join(basegameplaintext, 'Mesh', group.get('unit') + ".mesh")
+        shieldfile = os.path.join(rootpath, 'Mesh', group.get('shield') + ".mesh")
+        if not os.path.isfile(shieldfile):
+            shieldfile = os.path.join(basegameplaintext, 'Mesh', group.get('shield') + ".mesh")
+        if os.path.isfile(meshfile):
+            for line in open(meshfile):
+                if 'BoundingRadius' in line:
+                    unitradius = float(line.strip().split()[1])
+                    
+                    if shieldfile.endswith("none.mesh"):
+                        if 'Fighter' not in group.get('entity'):
+                            shield = 'none'
+                            #print('\tNo Shield: ' + group.get('entity'))
+                    elif os.path.isfile(shieldfile):
+                        shieldradius = None
+                        for linex in open(shieldfile):
+                            if 'BoundingRadius' in linex:
+                                shieldradius = float(linex.strip().split()[1])
+                                break
+                        if shieldradius:
+                            shield = str(int((shieldradius / unitradius) * 100)) + "%"
+                            if shieldradius > 1.5 * unitradius:
+                                print('\tOversized Shield: ' + group.get('entity') + ' has a unitsize of ' + str(unitradius) + ' with a shieldsize of ' + str(shieldradius))
+                            elif unitradius > shieldradius:
+                                print('\tUndersized Shield: ' + group.get('entity') + ' has a unitsize of ' + str(unitradius) + ' with a shieldsize of ' + str(shieldradius))
+                    else:
+                        print("\tCan't find " + shieldfile)
+                    #mainmesh.append({'size': int(round(unitradius * 2)), 'entity': group.get('entity'), 'shield': shield})
+                    break
+meshgroupsize = sorted(mainmesh, key=lambda k: k['size'], reverse=True)
+for group in meshgroupsize:
+    print(str(group.get('size')) + "\t" + group.get('entity') + "\t" + group.get("shield"))
+    
+        
+
+
+print("** Reviewing Squadrons **")
 for filename in squadentities:
     squadcount = 0
     entityType = ""
