@@ -153,6 +153,7 @@ basegamesounds = []
 soundlinks = []
 soundfilelinks = []
 modentities = []
+stockentities = []
 squadentities = []
 
 path = os.path.join(rootpath, 'GameInfo')
@@ -160,12 +161,19 @@ for filename in glob.glob(os.path.join(path, '*.entity')):
     entityfilename = os.path.basename(filename)
     modentities.append(entityfilename.lower())
 
+stockpath = os.path.join(os.path.expanduser(basegameplaintext), 'GameInfo')
+for filename in glob.glob(os.path.join(stockpath, '*.entity')):
+    entityfilename = os.path.basename(filename)
+    stockentities.append(entityfilename.lower())
+
 def isModEntity(file):
     global modentities
     return file.lower() in modentities
     
 def notInMod(entity, file):
-    if entity != "BuffWormHoleTeleport":
+    global stockentities
+    entityname = entity.lower()  + ".entity"
+    if entityname not in stockentities:
         print "Entity not in Mod: " + entity + " via " + file
 
 def readFile(filename):
@@ -179,6 +187,8 @@ def readFile(filename):
     global humancost
     global goauldtime
     global goauldcost
+    global wraithtime
+    global wraithcost
     entityfilename = os.path.basename(filename)
     entitylist.append(entityfilename)
     linecount = 0
@@ -212,8 +222,11 @@ def readFile(filename):
                 #print "Entity Match: " + entityType + " via " + filename
                 entitylinked.append([entityType, filename])
             elif os.path.isfile(os.path.join(plaintextpath, entityType + ".entity")):
-                notInMod(entityType, filename)
-                readFile(os.path.join(plaintextpath, entityType + ".entity"))
+                if entityType != "" and not [entityType, filename] in entitylinked:
+                    entitylinked.append([entityType, filename])
+                    if not isModEntity(entityType + ".entity"):
+                        notInMod(entityType, filename)
+                        readFile(os.path.join(plaintextpath, entityType + ".entity"))
             if entityType == "ResourceAsteroid":
                 entitylinked.append([entityfilename.replace(".entity", ""), filename])
             elif entityType == "PipCloud":
@@ -461,11 +474,31 @@ def readFile(filename):
                 brushname = line.replace("underlay", "").replace('"', "").strip()
                 if brushname != "" and not [brushname, filename] in brushlist:
                     brushlist.append([brushname, filename])
+            elif line.strip().startswith("icon "):
+                brushname = line.replace("icon ", "").replace('"', "").strip()
+                if brushname != "" and not [brushname, filename] in brushlist:
+                    brushlist.append([brushname, filename])
+            elif "SlotLevelPicture" in line:
+                brushname = line.strip().split()[1].replace('"', "").strip()
+                if brushname != "" and not [brushname, filename] in brushlist:
+                    brushlist.append([brushname, filename])
+            elif "LowRes " in line:
+                brushname = line.strip().split()[1].replace('"', "").strip()
+                if brushname != "" and not [brushname, filename] in brushlist:
+                    brushlist.append([brushname, filename])
+            elif "HighRes " in line:
+                brushname = line.strip().split()[1].replace('"', "").strip()
+                if brushname != "" and not [brushname, filename] in brushlist:
+                    brushlist.append([brushname, filename])
             elif line.strip().startswith("overlay "):
                 brushname = line.replace("overlay", "").replace('"', "").strip()
                 if brushname != "" and not [brushname, filename] in brushlist:
                     brushlist.append([brushname, filename])
             elif 'Backdrop' in line and ' "' in line:
+                brushname = line.strip().split()[1].replace('"', "").strip()
+                if brushname != "" and not [brushname, filename] in brushlist:
+                    brushlist.append([brushname, filename])
+            elif 'Picture ' in line and ' "' in line:
                 brushname = line.strip().split()[1].replace('"', "").strip()
                 if brushname != "" and not [brushname, filename] in brushlist:
                     brushlist.append([brushname, filename])
@@ -509,7 +542,7 @@ def readFile(filename):
                     if line.startswith('PerLevelUpgradeTime '):
                         time = int(float(line.replace("PerLevelUpgradeTime", "").strip()))
                         if researchxtime[researchpos] != time:
-                            print "\tExpected PerLevelTime: " + str(researchxtime[researchpos]) + " - PerLevelTime: " + str(time) + " incorrect for " + filename
+                            print "\tExpected PerLevelUpgradeTime: " + str(researchxtime[researchpos]) + " - PerLevelUpgradeTime: " + str(time) + " incorrect for " + filename
                     if line.startswith('MaxNumResearchLevels'):
                         maxlevels = int(float(line.replace("MaxNumResearchLevels", "").strip()))
                     if line.startswith('PerLevelCostIncrease'):
@@ -551,6 +584,9 @@ def readFile(filename):
                 elif "Goauld" in os.path.basename(filename):
                     goauldtime += totaltime * maxlevels /60
                     goauldcost += totalcost * maxlevels
+                elif "Wraith" in os.path.basename(filename):
+                    wraithtime += totaltime * maxlevels /60
+                    wraithcost += totalcost * maxlevels
     if len(shieldmesh) > 0 and len(unitmesh) > 0:
         meshgroup.append({'unit': unitmesh, 'entity': entityfilename.replace(".entity", ""), 'shield': shieldmesh, 'size': 0})
     elif len(unitmesh) > 0:
@@ -624,6 +660,26 @@ for filename in glob.glob(os.path.join(path, '*')):
                 brushentries.append([brushentry, filename])
             elif [brushentry, filename] in brushentries:
                 print "\tDuplicate Brush entry: " + brushentry + " in " + filename
+        elif 'underlay' in line or 'overlay' in  line:
+            brushname = line.strip().split()[1].replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])
+        elif 'Back ' in line and ' "'in line:
+            brushname = line.strip().split()[1].replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])
+        elif 'Brush ' in line and ' "'in line:
+            brushname = line.strip().split()[1].replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])
+        elif ('icon ' in line or 'Icon ' in line) and '"' in line:
+            brushname = line.strip().split()[1].replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])
+        elif 'backdrop ' in  line:
+            brushname = line.strip().split()[1].replace('"', "").strip()
+            if brushname != "" and not [brushname, filename] in brushlist:
+                brushlist.append([brushname, filename])
         elif line.strip().startswith("leftPlayer ") or line.strip().startswith("rightPlayer "):
             entityname = line.strip().split()[1].replace('"', "")
             if entityname != "" and not [entityname, filename] in entitylinked:
@@ -692,11 +748,23 @@ humantime = 0
 humancost = 0
 goauldtime = 0
 goauldcost = 0
+wraithtime = 0
+wraithcost = 0
 path = os.path.join(rootpath, 'GameInfo')
 
-manualentry = ["AbilityWormHole", "BuffDecloakMineForMovement","BuffNeutralCapturableEntity","BuffRecentlyColonized",
-    "PLANETMODULE_TECHORBITALCRYSTALEXTRACTOR", "PLANETMODULE_TECHORBITALMETALEXTRACTOR",
-    "AbilityMinorFactionTradeCrystalForMetal", "AbilityMinorFactionTradeMetalForCrystal"]
+manualentry = ["AbilityWormHole", 
+    "BuffDecloakMineForMovement",
+    "BuffNeutralCapturableEntity",
+    "BuffRecentlyColonized",
+    "PLANETMODULE_TECHORBITALCRYSTALEXTRACTOR", 
+    "PLANETMODULE_TECHORBITALMETALEXTRACTOR",
+    "AbilityMinorFactionTradeCrystalForMetal", 
+    "AbilityMinorFactionTradeMetalForCrystal", 
+    "PlanetConnection",
+    "PipCloudEnemyShips",
+    "PipCloudFriendlyShips",
+    "PipCloudModules",
+    "PipCloudPlanets"]
 for entityname in manualentry:
     if entityname != "" and not [entityname, "ManualEntry"] in entitylinked:
         entitylinked.append([entityname, "ManualEntry"])
@@ -716,6 +784,9 @@ if humantime > 0:
 if goauldtime > 0:
     print "   ** Goauld Research Time: " + str(goauldtime) + " minutes"
     print "   ** Goauld Research Credits: " + str(goauldcost)
+if wraithtime > 0:
+    print "   ** Wraith Research Time: " + str(wraithtime) + " minutes"
+    print "   ** Wraith Research Credits: " + str(wraithcost)
 
 for filename in glob.glob(os.path.join(path, '*.randomeventdefs')):
     plaintextpath = os.path.join(os.path.expanduser(basegameplaintext),'GameInfo')
@@ -827,6 +898,13 @@ for filename in glob.glob(os.path.join(path, '*.constants')):
                 if not isModEntity(entityname + ".entity"):
                     notInMod(entityname, filename)
                     readFile(os.path.join(plaintextpath, entityname + ".entity"))
+        elif 'DefName = ' in line:
+                entityname = line.strip().split("= ")[1].replace('"', "")
+                if entityname != "" and not [entityname, filename] in entitylinked:
+                    entitylinked.append([entityname, filename])
+                    if not isModEntity(entityname + ".entity"):
+                        notInMod(entityname, filename)
+                        readFile(os.path.join(plaintextpath, entityname + ".entity"))
         elif 'FactionName' in line:
             stringname = line.replace('FactionName', "").replace('"', "").strip()
             if stringname != "" and not [stringname, filename] in stringlist:
@@ -1159,7 +1237,7 @@ for group in meshgroup:
                             if 'BoundingRadius' in linex:
                                 shieldradius = float(linex.strip().split()[1])
                                 break
-                        if shieldradius:
+                        if shieldradius and "Planet" not in group.get("entity"):
                             shield = str(int((shieldradius / unitradius) * 100)) + "%"
                             if shieldradius > 1.5 * unitradius:
                                 print('\tOversized Shield: ' + group.get('entity') + ' has a unitsize of ' + str(unitradius) + ' with a shieldsize of ' + str(shieldradius))
@@ -1314,14 +1392,15 @@ else:
                 test = True
                 break
         if not test:
-            #print "\tBrush not referenced in a plain text game file: " + brush[0]
+            print "\tBrush not referenced in a plain text game file: " + brush[0]
             pass       
 
 if buildman:
     print "\n** Write entity.manifest **"
     entitywrite = []
+    duplicate = ["PlanetbonusPacifistSociety"] #stock game inproper case
     for entity in entitylinked:
-        if entity[0] + '.entity' not in entitywrite:
+        if entity[0] + '.entity' not in entitywrite and entity[0] not in duplicate:
             entitywrite.append(entity[0] + '.entity')
     entitywrite.sort()
     file = open("entity.manifest", "w")
@@ -1447,7 +1526,7 @@ if verbose and basegame:
     baseDup('GameInfo')
     baseDup('Particle')
     baseDup('Galaxy')
-    #baseDup('Window')
+    baseDup('Window')
 
 
 if graph:

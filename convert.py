@@ -48,7 +48,10 @@ def checkBin(inputpath, directory):
                 subprocess.call([os.path.join(basegame, 'ConvertData_Rebellion.exe'), datatype, filename, outfile, fileformat])
         else:
             print "copying " + gamefile
-            copyfile(filename, outfile)
+            try:
+                copyfile(filename, outfile)
+            except:
+                pass
 
 if len(sys.argv) > 1:
     i = 1
