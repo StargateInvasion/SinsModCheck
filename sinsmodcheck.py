@@ -1401,6 +1401,7 @@ print "** Reviewing Mesh Counts **"
 meshnames = []
 path = os.path.join(rootpath, "Mesh")
 
+
 def readMesh(filename):
     meshfile = os.path.basename(os.path.splitext(filename)[0])
     meshfiles.append(os.path.basename(filename))
@@ -1523,9 +1524,7 @@ for filename in meshlist:
     elif os.path.exists(os.path.join(meshpath, filename)):
         readMesh(os.path.join(meshpath, filename))
     else:
-        print(os.path.join(meshpath, filename))
         print ("Can't Find: " + filename)
-    # readMesh(filename[0])
 
 # for filename in glob.glob(os.path.join(path, "*")):
 #    readMesh(filename)
@@ -1666,13 +1665,13 @@ for filename in glob.glob(os.path.join(path, "*")):
                 texturelist.append([brushfilename, filename])
 
 entitymanlc = []
-duplicateetity = ["PlanetbonusPacifistSociety"]  # stock game inproper case
+duplicateentity = ["PlanetbonusPacifistSociety"]  # stock game inproper case
 for entity in entitymanifest:
     entitymanlc.append(entity.lower())
 for entity in entitylinked:
     if (
         not str(entity[0] + ".entity").lower() in entitymanlc
-        and entity[0] not in duplicateetity
+        and entity[0] not in duplicateentity
     ):
         print "\tEntity not referenced in the entity.manifest: " + entity[0]
 
@@ -1691,8 +1690,15 @@ else:
     entitylist.sort()
     entitymanifest.sort()
     for entity in entitylist:
-        if entity not in entitymanifest and entity not in duplicateetity:
-            print "\tEntity not referenced in the entity.manifest: " + entity
+        if (
+            entity not in entitymanifest
+            and entity.replace(".entity", "") not in duplicateentity
+        ):
+            lcentitymanifest = {et.lower() for et in entitymanifest}
+            if entity.lower() not in lcentitymanifest:
+                print "\tEntity not referenced in the entity.manifest: " + entity
+            else:
+                print "\tEntity Case Sensitive conflict in entity.manifest: " + entity
 
     print "** Particles Not Referenced **"
     for item in particlefiles:
@@ -1748,10 +1754,11 @@ else:
             print "\tTexture not referenced in a plain text game file: " + tex
 
     print "** Bruses Not Referenced **"
+    brushignore = ["GAMELOGO_OPENING", "IRONCLADLOGO", "STARDOCKLOGO", "DiplomacyLogo"]
     for brush in brushentries:
         test = False
         for item in brushlist:
-            if item[0].lower() == brush[0].lower():
+            if item[0].lower() == brush[0].lower() or brush[0] in brushignore:
                 test = True
                 break
         if not test:
@@ -1762,7 +1769,10 @@ if buildman:
     print "\n** Write entity.manifest **"
     entitywrite = []
     for entity in entitylinked:
-        if entity[0] + ".entity" not in entitywrite and entity[0] not in duplicateetity:
+        if (
+            entity[0] + ".entity" not in entitywrite
+            and entity[0] not in duplicateentity
+        ):
             entitywrite.append(entity[0] + ".entity")
     entitywrite.sort()
     file = open("entity.manifest", "w")
