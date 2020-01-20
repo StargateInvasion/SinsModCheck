@@ -6,3 +6,5 @@ graphedges.txt
 graphnodes.txt
 *.pyc
 entity.manifest
+SinsTools.ini
+SinsLint*
