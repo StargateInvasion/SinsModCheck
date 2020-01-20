@@ -36,7 +36,7 @@ def baseDup(directory):
             filemd5 = md5(filename)
             sinsmd5 = md5(os.path.join(basepath, gamefile))
             if filemd5 == sinsmd5:
-                print "\tUnnecessary File: " + gamefile
+                print "\tPossible Unnecessary File: " + gamefile
                 # os.remove(filename)
             elif not skipbin and directory != "Texture" and directory != "Sound":
                 fline = (
@@ -582,13 +582,27 @@ def readFile(filename):
                         notInMod(entityname, filename)
                         readFile(os.path.join(plaintextpath, entityname + ".entity"))
             elif "meshName " in line:
-                meshname = line.strip().split()[1].replace('"', "").strip()
+                meshname = (
+                    line.strip()
+                    .split()[1]
+                    .replace('"', "")
+                    .replace(".mesh", "")
+                    .replace(".MESH", "")
+                    .strip()
+                )
                 if meshname != "":
                     unitmesh = meshname
                     if not [meshname, filename] in meshlist:
                         meshlist.append([meshname, filename])
             elif "MeshName" in line and ' "' in line:
-                meshname = line.strip().split()[1].replace('"', "").strip()
+                meshname = (
+                    line.strip()
+                    .split()[1]
+                    .replace('"', "")
+                    .replace(".mesh", "")
+                    .replace(".MESH", "")
+                    .strip()
+                )
                 if meshname != "":
                     if "ShieldMeshName" in line:
                         shieldmesh = meshname
@@ -1014,7 +1028,14 @@ for filename in glob.glob(os.path.join(path, "*.starscapedata")):
     plaintextpath = os.path.join(basegameplaintext, "GameInfo")
     for line in open(filename):
         if "starsMesh " in line:
-            meshname = line.strip().split()[1].replace('"', "").strip()
+            meshname = (
+                line.strip()
+                .split()[1]
+                .replace('"', "")
+                .replace(".mesh", "")
+                .replace(".MESH", "")
+                .strip()
+            )
             if meshname != "" and not [meshname, filename] in meshlist:
                 meshlist.append([meshname, filename])
 
@@ -1157,7 +1178,13 @@ for filename in glob.glob(os.path.join(path, "*.skyboxbackdropdata")):
         elif line.startswith("properties"):
             i = i + 1
         elif "meshName " in line:
-            meshname = line.replace("meshName", "").replace('"', "").strip()
+            meshname = (
+                line.replace("meshName", "")
+                .replace('"', "")
+                .replace(".mesh", "")
+                .replace(".MESH", "")
+                .strip()
+            )
             if meshname != "" and not [meshname, filename] in meshlist:
                 meshlist.append([meshname, filename])
         elif "textureName " in line:
@@ -1193,7 +1220,13 @@ for filename in glob.glob(os.path.join(path, "*.asteroidDef")):
         elif line.startswith("meshGroup"):
             i = i + 1
         elif "meshName " in line:
-            meshname = line.replace("meshName", "").replace('"', "").strip()
+            meshname = (
+                line.replace("meshName", "")
+                .replace('"', "")
+                .replace(".mesh", "")
+                .replace(".MESH", "")
+                .strip()
+            )
             if meshname != "" and not [meshname, filename] in meshlist:
                 meshlist.append([meshname, filename])
 
@@ -1327,7 +1360,13 @@ for filename in glob.glob(os.path.join(path, "*")):
             if brushfilename != "" and not [brushfilename, filename] in texturelist:
                 texturelist.append([brushfilename, filename])
         elif "MeshName " in line:
-            meshfilename = line.replace("MeshName ", "").replace('"', "").strip()
+            meshfilename = (
+                line.replace("MeshName ", "")
+                .replace('"', "")
+                .replace(".mesh", "")
+                .replace(".MESH", "")
+                .strip()
+            )
             if meshfilename != "" and not [meshfilename, filename] in meshlist:
                 meshlist.append([meshfilename, filename])
 
@@ -1357,10 +1396,12 @@ for filename in glob.glob(os.path.join(path, "*")):
         print "\t" + filename
         print "\t\tNumStrings: " + str(itemCount) + ", StringInfo: " + str(i)
 
+
 print "** Reviewing Mesh Counts **"
-path = os.path.join(rootpath, "Mesh")
 meshnames = []
-for filename in glob.glob(os.path.join(path, "*")):
+path = os.path.join(rootpath, "Mesh")
+
+def readMesh(filename):
     meshfile = os.path.basename(os.path.splitext(filename)[0])
     meshfiles.append(os.path.basename(filename))
     meshnames.append(meshfile)
@@ -1472,6 +1513,23 @@ for filename in glob.glob(os.path.join(path, "*")):
         print "\t" + filename
         print "\t\tNumTriangles: " + str(NumTriangles) + ", Triangles: " + str(t)
 
+
+for filename in meshlist:
+    filename = filename[0] + ".mesh"
+    modpath = os.path.join(rootpath, "Mesh")
+    meshpath = os.path.join(basegameplaintext, "Mesh")
+    if os.path.exists(os.path.join(modpath, filename)):
+        readMesh(os.path.join(modpath, filename))
+    elif os.path.exists(os.path.join(meshpath, filename)):
+        readMesh(os.path.join(meshpath, filename))
+    else:
+        print(os.path.join(meshpath, filename))
+        print ("Can't Find: " + filename)
+    # readMesh(filename[0])
+
+# for filename in glob.glob(os.path.join(path, "*")):
+#    readMesh(filename)
+
 print "** Reviewing Mesh Sizes **"
 mainmesh = []
 for group in meshgroup:
@@ -1568,18 +1626,6 @@ for filename in squadentities:
                         ) + " squads defined."
                     break
 
-"""
-print "** Reviewing Mesh **"
-for listitem in meshlist:
-    test = False
-    for item in meshfiles:
-        if listitem[0].lower().replace(".mesh", "") == item.lower().replace(".mesh", ""):
-            test = True
-            break
-    if not test:
-        print "\tMesh does not exist in Mesh Folder: " + listitem[0]
-"""
-
 print "** Reviewing Textures **"
 path = os.path.join(rootpath, "Textures")
 textures = []
@@ -1645,7 +1691,7 @@ else:
     entitylist.sort()
     entitymanifest.sort()
     for entity in entitylist:
-        if entity not in entitymanifest:
+        if entity not in entitymanifest and entity not in duplicateetity:
             print "\tEntity not referenced in the entity.manifest: " + entity
 
     print "** Particles Not Referenced **"
@@ -1758,9 +1804,9 @@ for tex in texturelist:
             in basegametextures
         ):
             for basetex in basegametextures:
-                if basetex.replace("-cl.", ".").replace("-da.", ".").replace(
-                    "-nm.", "."
-                ).replace("-bm.", ".").strip() == tex[0].lower().replace(
+                if basetex.replace("-cl", "").replace("-da", "").replace(
+                    "-nm", ""
+                ).replace("-bm", "").strip() == tex[0].lower().replace(
                     ".tga", ""
                 ).replace(
                     ".dds", ""
@@ -1806,7 +1852,7 @@ for mesh in meshlist:
         if meshval == itemlist.lower().replace(".mesh", ""):
             test = True
             break
-    if not test and not meshval in basegamemeshes:
+    if not test and meshval not in basegamemeshes:
         print '\t"' + str(mesh[0]) + '"' + ' listed in "' + str(mesh[1]).replace(
             rootpath, ""
         ) + '" does not appear to exist in Mesh folder.'
