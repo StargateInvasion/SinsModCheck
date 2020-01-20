@@ -8,7 +8,7 @@ import hashlib
 import subprocess
 
 basegameplaintext = os.path.expanduser("~/Documents/workspace/SinsRef/Rebellion194")
-version = "1.16"
+version = "1.17"
 verbose = False
 graph = False
 skipbin = False
