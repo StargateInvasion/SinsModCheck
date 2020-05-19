@@ -224,6 +224,23 @@ soundfilelinks = []
 modentities = []
 stockentities = []
 squadentities = []
+hangarpoints = []
+researchtime = [40, 45, 50, 60, 75, 90, 105, 120]
+researchxtime = [5, 5, 5, 5, 10, 10, 10, 10]
+researchcredit = [400, 600, 800, 1000, 1200, 1400, 1600, 1800]
+researchxcredit = [100, 100, 100, 100, 100, 100, 100, 100]
+researchmetal = [0, 50, 100, 150, 200, 250, 300, 350]
+researchxmetal = [0, 25, 25, 25, 25, 25, 25, 25]
+researchcrystal = [25, 100, 175, 250, 325, 400, 475, 550]
+researchxcrystal = [25, 25, 25, 25, 25, 25, 25, 25]
+asurantime = 0
+asurancost = 0
+humantime = 0
+humancost = 0
+goauldtime = 0
+goauldcost = 0
+wraithtime = 0
+wraithcost = 0
 
 path = os.path.join(rootpath, "GameInfo")
 for filename in glob.glob(os.path.join(path, "*.entity")):
@@ -517,6 +534,8 @@ def readFile(filename):
                     and entityType != "Cosmetic"
                 ):
                     print "\t" + entityfilename + " has CommandPoints but no squads."
+                elif float(value) > 0 and filename not in hangarpoints:
+                    hangarpoints.append(filename)
             elif "pactUnlockEntityDefName" in line:
                 entityname = (
                     line.replace("pactUnlockEntityDefName", "").replace('"', "").strip()
@@ -800,6 +819,13 @@ if basegame:
                 .replace(".tga", "")
                 .replace(".dds", "")
             )
+        path = os.path.join(basegame, "TextureAnimations")
+        for filename in glob.glob(os.path.join(path, "*")):
+            basegametextures.append(
+                os.path.basename(filename)
+                .lower()
+                .replace(".texanim", "")
+            )
         path = os.path.join(basegame, "Particle")
         for filename in glob.glob(os.path.join(path, "*")):
             basegameparticles.append(
@@ -838,11 +864,21 @@ if i != 0 and itemCount != i:
 print "** Reviewing Brush Counts **"
 brushentries = []
 path = os.path.join(rootpath, "Window")
-for filename in glob.glob(os.path.join(path, "*")):
+brushmanifest = []
+for line in open(os.path.join(rootpath, "brush.manifest")):
+    if "brushFile " in line:
+        brushmanifest.append(line.replace("brushFile ", "").replace('"', "").strip())
+for filename in glob.glob(os.path.join(path, "*.brushes")):
+    if os.path.basename(filename) not in brushmanifest:
+        print("%s not in the brush.manifest" % os.path.basename(filename))
+for filename in brushmanifest:
     i = 0
     itemCount = 0
     linecount = 0
-    for line in open(filename):
+    filepath = os.path.join(rootpath, "Window", filename)
+    if not os.path.exists(filepath):
+        filepath = os.path.join(basegameplaintext, "Window", filename)
+    for line in open(filepath):
         if linecount == 0 and line.startswith("BIN"):
             binfiles.append(os.path.basename(filename))
             break
@@ -944,22 +980,6 @@ for filename in glob.glob(os.path.join(path, "*")):
                 texturelist.append([brushfilename, filename])
 
 print "** Reviewing Entity Values **"
-researchtime = [40, 45, 50, 60, 75, 90, 105, 120]
-researchxtime = [5, 5, 5, 5, 10, 10, 10, 10]
-researchcredit = [400, 600, 800, 1000, 1200, 1400, 1600, 1800]
-researchxcredit = [100, 100, 100, 100, 100, 100, 100, 100]
-researchmetal = [0, 50, 100, 150, 200, 250, 300, 350]
-researchxmetal = [0, 25, 25, 25, 25, 25, 25, 25]
-researchcrystal = [25, 100, 175, 250, 325, 400, 475, 550]
-researchxcrystal = [25, 25, 25, 25, 25, 25, 25, 25]
-asurantime = 0
-asurancost = 0
-humantime = 0
-humancost = 0
-goauldtime = 0
-goauldcost = 0
-wraithtime = 0
-wraithcost = 0
 path = os.path.join(rootpath, "GameInfo")
 
 manualentry = [
@@ -1158,6 +1178,31 @@ for filename in glob.glob(os.path.join(path, "*.sounddata")):
             if soundname != "" and not [soundname, filename] in soundlinks:
                 soundlinks.append([soundname, filename])
             elif [soundname, filename] in soundlinks:
+                print "\tDuplicate Sound entry: " + soundname + " in " + filename
+        elif line.strip().startswith("fileName "):
+            soundfile = line.replace("fileName", "").replace('"', "").strip()
+            if soundfile != "" and not [soundfile, filename] in soundfilelinks:
+                soundfilelinks.append([soundfile, filename])
+
+    if i != 0 and itemCount != i:
+        print "\tIncorrect Count: " + filename
+        print "\t\tNumEffects: " + str(itemCount) + ", Effect: " + str(i)
+
+basegameinfo = os.path.join(basegameplaintext, "GameInfo")
+basesoundlinks = []
+for filename in glob.glob(os.path.join(basegameinfo, "*.sounddata")):
+    i = 0
+    itemCount = 0
+    for line in open(filename):
+        if "numEffects" in line or "numMusic" in line:
+            itemCount = int(line.strip().split()[1])
+        elif line.startswith("effect") or line.startswith("music"):
+            i = i + 1
+        elif line.strip().startswith("name "):
+            soundname = line.replace("name", "").replace('"', "").strip()
+            if soundname != "" and not [soundname, filename] in basesoundlinks:
+                basesoundlinks.append([soundname, filename])
+            elif [soundname, filename] in basesoundlinks:
                 print "\tDuplicate Sound entry: " + soundname + " in " + filename
         elif line.strip().startswith("fileName "):
             soundfile = line.replace("fileName", "").replace('"', "").strip()
@@ -1379,6 +1424,7 @@ for filename in glob.glob(os.path.join(path, "*")):
 print "** Reviewing String Counts **"
 path = os.path.join(rootpath, "String")
 stringids = []
+basestringids = []
 for filename in glob.glob(os.path.join(path, "*")):
     i = 0
     itemCount = 0
@@ -1395,7 +1441,23 @@ for filename in glob.glob(os.path.join(path, "*")):
     if i != 0 and itemCount != i:
         print "\t" + filename
         print "\t\tNumStrings: " + str(itemCount) + ", StringInfo: " + str(i)
-
+path = os.path.join(basegameplaintext, "String")
+for filename in glob.glob(os.path.join(path, "*")):
+    i = 0
+    itemCount = 0
+    for line in open(filename):
+        if "NumStrings" in line:
+            itemCount = int(line.strip().split()[1])
+        elif "StringInfo\r\n" in line or "StringInfo\n" in line:
+            i = i + 1
+        elif 'ID "' in line:
+            stringval = line.replace('ID "', "").replace('"', "").strip()
+            if not stringval.startswith("IDS_TAUNT") and stringval in basestringids:
+                print "\tDuplicate string in english.str: " + stringval
+            basestringids.append(stringval)
+    if i != 0 and itemCount != i:
+        print "\t" + filename
+        print "\t\tNumStrings: " + str(itemCount) + ", StringInfo: " + str(i)
 
 print "** Reviewing Mesh Counts **"
 meshnames = []
@@ -1535,9 +1597,11 @@ for group in meshgroup:
     if not "Cosmetic" in group.get("entity"):
         meshfile = os.path.join(rootpath, "Mesh", group.get("unit") + ".mesh")
         if not os.path.isfile(meshfile):
-            meshfile = os.path.join(
-                basegameplaintext, "Mesh", group.get("unit") + ".mesh"
-            )
+            # meshfile = os.path.join(
+            #    basegameplaintext, "Mesh", group.get("unit") + ".mesh"
+            # )
+            # Skip check if it's a base game asset
+            continue
         shieldfile = os.path.join(rootpath, "Mesh", group.get("shield") + ".mesh")
         if not os.path.isfile(shieldfile):
             shieldfile = os.path.join(
@@ -1612,6 +1676,8 @@ for filename in squadentities:
                         ) + " Command Points but only " + str(
                             squadcount
                         ) + " squads defined."
+                    elif commandpoints > 0 and filename not in hangarpoints:
+                        hangarpoints.append(filename)
                     break
                 elif "CommandPoints" in line:
                     line = f.next().strip()
@@ -1623,7 +1689,41 @@ for filename in squadentities:
                         ) + " Command Points but only " + str(
                             squadcount
                         ) + " squads defined."
+                    elif commandpoints > 0 and filename not in hangarpoints:
+                        hangarpoints.append(filename)
                     break
+hangarmeshcheck = []
+for filename in hangarpoints:
+    meshname = None
+    for line in open(filename):
+        if "meshName" in line:
+            meshname = (
+                line.replace("meshName", "")
+                .replace('"', "")
+                .replace(".mesh", "")
+                .replace(".MESH", "")
+                .strip()
+            )
+            if "IncreasedEffectName" not in meshname and "DecreasedEffectName" not in meshname:
+                if meshname not in hangarmeshcheck:
+                    hangarmeshcheck.append(meshname)
+                    mpath = os.path.join(rootpath, "Mesh", meshname + ".mesh")
+                    if not os.path.exists(mpath):
+                        mpath = os.path.join(basegameplaintext, "Mesh", meshname + ".mesh")
+                    if not os.path.exists(mpath):
+                        print("Can't find %s.mesh" % meshname)
+                        continue
+                    i = 0
+                    for meshline in open(mpath):
+                        if "Hangar" in meshline:
+                            i = i+1
+                    # print("%s: %d" % (meshname, i))
+                    if i == 0:
+                        print(meshname + ".mesh does not contain a hangar point, but an entity lists squads")
+
+    if not meshname:
+        print("No mesh found for %s" % filename)  
+
 
 print "** Reviewing Textures **"
 path = os.path.join(rootpath, "Textures")
@@ -1816,10 +1916,14 @@ for tex in texturelist:
             for basetex in basegametextures:
                 if basetex.replace("-cl", "").replace("-da", "").replace(
                     "-nm", ""
-                ).replace("-bm", "").strip() == tex[0].lower().replace(
+                ).replace("-bm", "").replace(
+                    ".texanim", ""
+                ).strip() == tex[0].lower().replace(
                     ".tga", ""
                 ).replace(
                     ".dds", ""
+                ).replace(
+                    ".texanim", ""
                 ):
                     test = True
                     break
@@ -1850,6 +1954,11 @@ for string in stringlist:
             test = True
             break
     if not test:
+        for itemlist in basestringids:
+            if string[0].lower() == itemlist.lower():
+                test = True
+                break
+    if not test:
         print '\t"' + str(string[0]) + '"' + ' listed in "' + str(string[1]).replace(
             rootpath, ""
         ) + '" does not appear to exist in English.str.'
@@ -1875,6 +1984,11 @@ for sound in soundlist:
         if sound[0] == itemlist[0]:
             test = True
             break
+    if not test:
+        for itemlist in basesoundlinks:
+            if sound[0] == itemlist[0]:
+                test = True
+                break
     if not test:
         print '\t"' + str(sound[0]) + '"' + ' listed in "' + str(sound[1]).replace(
             rootpath, ""
