@@ -7,7 +7,7 @@ import sys
 import hashlib
 import subprocess
 
-basegameplaintext = os.path.expanduser("~/Documents/workspace/SinsRef/Rebellion194")
+basegameplaintext = os.path.expanduser("C:\Program Files (x86)\Steam\steamapps\common\Sins of a Solar Empire Rebellion")
 version = "1.17"
 verbose = False
 graph = False
@@ -36,7 +36,7 @@ def baseDup(directory):
             filemd5 = md5(filename)
             sinsmd5 = md5(os.path.join(basepath, gamefile))
             if filemd5 == sinsmd5:
-                print "\tPossible Unnecessary File: " + gamefile
+                print("\tPossible Unnecessary File: " + gamefile)
                 # os.remove(filename)
             elif not skipbin and directory != "Texture" and directory != "Sound":
                 fline = (
@@ -56,7 +56,7 @@ def baseDup(directory):
                         or datatype == "mesh"
                         or datatype == "particle"
                     ):
-                        print "checking " + gamefile
+                        print("checking " + gamefile)
                         if osname == "posix":
                             subprocess.call(
                                 [
@@ -81,7 +81,7 @@ def baseDup(directory):
                         filemd5 = md5(filename + ".tmp")
                         os.remove(filename + ".tmp")
                         if filemd5 == sinsmd5:
-                            print "\tPossible Unnecessary File: " + gamefile
+                            print("\tPossible Unnecessary File: " + gamefile)
                             # os.remove(filename)
                         else:
                             pass
@@ -102,7 +102,7 @@ def checkBin(directory):
             or datatype == "mesh"
             or datatype == "particle"
         ):
-            print "checking " + gamefile
+            print("checking " + gamefile)
             if osname == "posix":
                 subprocess.call(
                     [
@@ -136,11 +136,11 @@ def getType(filename):
 if len(sys.argv) > 1:
     rootpath = sys.argv[1]
     if not os.path.isdir(os.path.expanduser(rootpath)):
-        print "\tUsage: simsmodcheck.py <moddirectory> --showunused --graphexport"
-        print "\nThe Mod directory '" + rootpath + " was not found."
+        print("\tUsage: simsmodcheck.py <moddirectory> --showunused --graphexport")
+        print("\nThe Mod directory '" + rootpath + " was not found.")
         sys.exit()
 else:
-    print "\tUsage: simsmodcheck.py <moddirectory> --showunused --graphexport --skipbin --fullbin --manifest"
+    print("\tUsage: simsmodcheck.py <moddirectory> --showunused --graphexport --skipbin --fullbin --manifest")
     sys.exit()
 
 if len(sys.argv) > 2:
@@ -186,15 +186,15 @@ elif os.path.isdir(
     )
 
 
-print "\n***** Sins of Solar Empire Mod File Verifcation " + version + " *****"
+print("\n***** Sins of Solar Empire Mod File Verifcation " + version + " *****")
 if not basegame:
-    print "\nThe Sins of a Solar Empire Rebellion base game was not found.  The script may identify items that are missing in the mod that could default to the base game.  Modify the script to include your basegame path.\n"
+    print("\nThe Sins of a Solar Empire Rebellion base game was not found.  The script may identify items that are missing in the mod that could default to the base game.  Modify the script to include your basegame path.\n")
 if verbose:
-    print "\nNote: Not all dependencies have been identified and Binary files in the mod are not read.  Files listed as UNUSED may be referenced by these binary files or not yet identified.\n"
+    print("\nNote: Not all dependencies have been identified and Binary files in the mod are not read.  Files listed as UNUSED may be referenced by these binary files or not yet identified.\n")
 
 if fullbin:
-    print "\n*** Full File Check (Create Bin as conversion check) ***"
-    print "\tNote: this process will create a temporary file and then delete it"
+    print("\n*** Full File Check (Create Bin as conversion check) ***")
+    print("\tNote: this process will create a temporary file and then delete it")
     checkBin("Mesh")
     checkBin("GameInfo")
     checkBin("Particle")
@@ -262,12 +262,12 @@ def notInMod(entity, file):
     global stockentities
     entityname = entity.lower() + ".entity"
     if entityname not in stockentities:
-        print "Entity not in Mod: " + entity + " via " + file
+        print("Entity not in Mod: " + entity + " via " + file)
 
 
 def readFile(filename):
     if not os.path.isfile(filename):
-        print "\tCouldn't find " + filename
+        print("\tCouldn't find " + filename)
         return
     plaintextpath = os.path.join(basegameplaintext, "GameInfo")
     global asurantime
@@ -307,11 +307,11 @@ def readFile(filename):
                     and playercount > 0
                     and playercountentity != playercount
                 ):
-                    print "\t Found a count of " + str(
+                    print("\t Found a count of " + str(
                         playercount
                     ) + " but the entityDefName below it has a count of " + str(
                         playercountentity
-                    ) + " in " + entityfilename
+                    ) + " in " + entityfilename)
                 playercount = int(line.split()[1])
                 playercountentity = 0
 
@@ -526,14 +526,14 @@ def readFile(filename):
                     "baseCommandPoints" not in line
                     and "maxNumCommandPoints" not in line
                 ):
-                    line = f.next()
+                    line = next(f)
                 value = line.strip().split()[1].replace('"', "")
                 if (
                     float(value) > 0
                     and not filename in squadentities
                     and entityType != "Cosmetic"
                 ):
-                    print "\t" + entityfilename + " has CommandPoints but no squads."
+                    print("\t" + entityfilename + " has CommandPoints but no squads.")
                 elif float(value) > 0 and filename not in hangarpoints:
                     hangarpoints.append(filename)
             elif "pactUnlockEntityDefName" in line:
@@ -702,26 +702,26 @@ def readFile(filename):
                     if line.startswith("Tier "):
                         tier = int(line.replace("Tier", "").strip())
                         if researchpos != tier:
-                            print "\tExpected Tier: " + str(
+                            print("\tExpected Tier: " + str(
                                 researchpos
-                            ) + " - Tier: " + str(tier) + " incorrect for " + filename
+                            ) + " - Tier: " + str(tier) + " incorrect for " + filename)
                     if line.startswith("BaseUpgradeTime"):
                         time = int(float(line.replace("BaseUpgradeTime", "").strip()))
                         totaltime = time
                         if researchtime[researchpos] != time:
-                            print "\tExpected Time: " + str(
+                            print("\tExpected Time: " + str(
                                 researchtime[researchpos]
-                            ) + " - Time: " + str(time) + " incorrect for " + filename
+                            ) + " - Time: " + str(time) + " incorrect for " + filename)
                     if line.startswith("PerLevelUpgradeTime "):
                         time = int(
                             float(line.replace("PerLevelUpgradeTime", "").strip())
                         )
                         if researchxtime[researchpos] != time:
-                            print "\tExpected PerLevelUpgradeTime: " + str(
+                            print("\tExpected PerLevelUpgradeTime: " + str(
                                 researchxtime[researchpos]
                             ) + " - PerLevelUpgradeTime: " + str(
                                 time
-                            ) + " incorrect for " + filename
+                            ) + " incorrect for " + filename)
                     if line.startswith("MaxNumResearchLevels"):
                         maxlevels = int(
                             float(line.replace("MaxNumResearchLevels", "").strip())
@@ -733,49 +733,49 @@ def readFile(filename):
                         cost = int(float(line.replace("credits", "").strip()))
                         totalcost = cost
                         if researchcredit[researchpos] != cost:
-                            print "\tExpected Credits: " + str(
+                            print("\tExpected Credits: " + str(
                                 researchcredit[researchpos]
                             ) + " - Credits: " + str(
                                 cost
-                            ) + " incorrect for " + filename
+                            ) + " incorrect for " + filename)
                     elif "credits " in line:
                         cost = int(float(line.replace("credits", "").strip()))
                         if researchxcredit[researchpos] != cost:
-                            print "\tExpected PerLevelCredits: " + str(
+                            print("\tExpected PerLevelCredits: " + str(
                                 researchxcredit[researchpos]
                             ) + " - PerLevelCredits: " + str(
                                 cost
-                            ) + " incorrect for " + filename
+                            ) + " incorrect for " + filename)
                     if not costcomplete and "metal " in line:
                         cost = int(float(line.replace("metal", "").strip()))
                         if researchmetal[researchpos] != cost:
-                            print "\tExpected Metal: " + str(
+                            print("\tExpected Metal: " + str(
                                 researchmetal[researchpos]
-                            ) + " - Metal: " + str(cost) + " incorrect for " + filename
+                            ) + " - Metal: " + str(cost) + " incorrect for " + filename)
                     elif "metal " in line:
                         cost = int(float(line.replace("metal", "").strip()))
                         if researchxmetal[researchpos] != cost:
-                            print "\tExpected PerLevelMetal: " + str(
+                            print("\tExpected PerLevelMetal: " + str(
                                 researchxmetal[researchpos]
                             ) + " - PerLevelMetal: " + str(
                                 cost
-                            ) + " incorrect for " + filename
+                            ) + " incorrect for " + filename)
                     if not costcomplete and "crystal " in line:
                         cost = int(float(line.replace("crystal", "").strip()))
                         if researchcrystal[researchpos] != cost:
-                            print "\tExpected Crystal: " + str(
+                            print("\tExpected Crystal: " + str(
                                 researchcrystal[researchpos]
                             ) + " - Crystal: " + str(
                                 cost
-                            ) + " incorrect for " + filename
+                            ) + " incorrect for " + filename)
                     elif "crystal " in line:
                         cost = int(float(line.replace("crystal", "").strip()))
                         if researchxcrystal[researchpos] != cost:
-                            print "\tExpected PerLevelCrystal: " + str(
+                            print("\tExpected PerLevelCrystal: " + str(
                                 researchxcrystal[researchpos]
                             ) + " - PerLevelCrystal: " + str(
                                 cost
-                            ) + " incorrect for " + filename
+                            ) + " incorrect for " + filename)
 
                 if "Asuran" in os.path.basename(filename):
                     asurantime += totaltime * maxlevels / 60
@@ -842,35 +842,43 @@ if basegame:
         basegameentites.append(os.path.basename(filename).lower())
 
 
-print "** Reviewing Entity Manifest **"
+print("** Reviewing Entity Manifest **")
 i = 0
 itemCount = 0
-for line in open(os.path.join(rootpath, "entity.manifest")):
-    if "entityNameCount" in line:
-        itemCount = int(line.strip().split()[1])
-    elif line.startswith("entityName"):
-        i = i + 1
-        entityval = line.replace("entityName", "").replace('"', "").strip()
-        if not entityval in entitymanifest:
-            entitymanifest.append(entityval)
-        else:
-            print "\tDuplicate entry in entity.manifest: " + entityval
+entity_manifest = None
+if os.path.exists(os.path.join(rootpath, "entity.manifest")):
+    entity_manifest = os.path.join(rootpath, "entity.manifest")
+elif os.path.exists(os.path.join(basegameplaintext, "entity.manifest")):
+    entity_manifest = os.path.join(basegameplaintext, "entity.manifest")
+if entity_manifest:
+    for line in open(entity_manifest):
+        if "entityNameCount" in line:
+            itemCount = int(line.strip().split()[1])
+        elif line.startswith("entityName"):
+            i = i + 1
+            entityval = line.replace("entityName", "").replace('"', "").strip()
+            if not entityval in entitymanifest:
+                entitymanifest.append(entityval)
+            else:
+                print("\tDuplicate entry in entity.manifest: " + entityval)
 
 
 if i != 0 and itemCount != i:
-    print "\tentity.manifest"
-    print "\t\tentityNameCount: " + str(itemCount) + ", entities: " + str(i)
+    print("\tentity.manifest")
+    print("\t\tentityNameCount: " + str(itemCount) + ", entities: " + str(i))
 
-print "** Reviewing Brush Counts **"
+print("** Reviewing Brush Counts **")
 brushentries = []
 path = os.path.join(rootpath, "Window")
 brushmanifest = []
-for line in open(os.path.join(rootpath, "brush.manifest")):
-    if "brushFile " in line:
-        brushmanifest.append(line.replace("brushFile ", "").replace('"', "").strip())
+if os.path.exists(os.path.join(rootpath, "brush.manifest")):
+    for line in open(os.path.join(rootpath, "brush.manifest")):
+        if "brushFile " in line:
+            brushmanifest.append(line.replace("brushFile ", "").replace('"', "").strip())
+            
 for filename in glob.glob(os.path.join(path, "*.brushes")):
     if os.path.basename(filename) not in brushmanifest:
-        print("%s not in the brush.manifest" % os.path.basename(filename))
+        print(("%s not in the brush.manifest" % os.path.basename(filename)))
 for filename in brushmanifest:
     i = 0
     itemCount = 0
@@ -901,7 +909,7 @@ for filename in brushmanifest:
             if brushentry != "" and not [brushentry, filename] in brushentries:
                 brushentries.append([brushentry, filename])
             elif [brushentry, filename] in brushentries:
-                print "\tDuplicate Brush entry: " + brushentry + " in " + filename
+                print("\tDuplicate Brush entry: " + brushentry + " in " + filename)
         elif "underlay" in line or "overlay" in line:
             brushname = line.strip().split()[1].replace('"', "").strip()
             if brushname != "" and not [brushname, filename] in brushlist:
@@ -961,8 +969,8 @@ for filename in brushmanifest:
                     readFile(os.path.join(plaintextpath, entityname + ".entity"))
 
     if i != 0 and itemCount != i:
-        print "\t" + filename
-        print "\t\tbrushCount: " + str(itemCount) + ", brushes: " + str(i)
+        print("\t" + filename)
+        print("\t\tbrushCount: " + str(itemCount) + ", brushes: " + str(i))
 
 path = os.path.join(rootpath, "Galaxy")
 for filename in glob.glob(os.path.join(path, "*")):
@@ -979,20 +987,24 @@ for filename in glob.glob(os.path.join(path, "*")):
             if brushfilename != "" and not [brushfilename, filename] in texturelist:
                 texturelist.append([brushfilename, filename])
 
-print "** Reviewing Entity Values **"
+print("** Reviewing Entity Values **")
 path = os.path.join(rootpath, "GameInfo")
+plaintextpath = os.path.join(basegameplaintext, "GameInfo")
 
-manualentry = [
-    "AbilityWormHole",
-    "BuffRecentlyColonized",
-    "AbilityMinorFactionTradeCrystalForMetal",
-    "AbilityMinorFactionTradeMetalForCrystal",
-    "PlanetConnection",
-    "PipCloudEnemyShips",
-    "PipCloudFriendlyShips",
-    "PipCloudModules",
-    "PipCloudPlanets",
-]
+if entity_manifest:
+    manualentry = [
+        "AbilityWormHole",
+        "BuffRecentlyColonized",
+        "AbilityMinorFactionTradeCrystalForMetal",
+        "AbilityMinorFactionTradeMetalForCrystal",
+        "PlanetConnection",
+        "PipCloudEnemyShips",
+        "PipCloudFriendlyShips",
+        "PipCloudModules",
+        "PipCloudPlanets",
+    ]
+else:
+    manualentry = []
 for entityname in manualentry:
     if entityname != "" and not [entityname, "ManualEntry"] in entitylinked:
         entitylinked.append([entityname, "ManualEntry"])
@@ -1004,17 +1016,17 @@ for filename in glob.glob(os.path.join(path, "*.entity")):
     readFile(filename)
 
 if asurantime > 0:
-    print "   ** Asuran Research Time: " + str(asurantime) + " minutes"
-    print "   ** Asuran Research Credits: " + str(asurancost)
+    print("   ** Asuran Research Time: " + str(asurantime) + " minutes")
+    print("   ** Asuran Research Credits: " + str(asurancost))
 if humantime > 0:
-    print "   ** Human Research Time: " + str(humantime) + " minutes"
-    print "   ** Human Research Credits: " + str(humancost)
+    print("   ** Human Research Time: " + str(humantime) + " minutes")
+    print("   ** Human Research Credits: " + str(humancost))
 if goauldtime > 0:
-    print "   ** Goauld Research Time: " + str(goauldtime) + " minutes"
-    print "   ** Goauld Research Credits: " + str(goauldcost)
+    print("   ** Goauld Research Time: " + str(goauldtime) + " minutes")
+    print("   ** Goauld Research Credits: " + str(goauldcost))
 if wraithtime > 0:
-    print "   ** Wraith Research Time: " + str(wraithtime) + " minutes"
-    print "   ** Wraith Research Credits: " + str(wraithcost)
+    print("   ** Wraith Research Time: " + str(wraithtime) + " minutes")
+    print("   ** Wraith Research Credits: " + str(wraithcost))
 
 for filename in glob.glob(os.path.join(path, "*.randomeventdefs")):
     plaintextpath = os.path.join(basegameplaintext, "GameInfo")
@@ -1164,7 +1176,7 @@ for filename in glob.glob(os.path.join(path, "*.explosiondata")):
                 soundlist.append([soundname, filename])
 
 
-print "** Reviewing Sound Counts **"
+print("** Reviewing Sound Counts **")
 for filename in glob.glob(os.path.join(path, "*.sounddata")):
     i = 0
     itemCount = 0
@@ -1178,15 +1190,15 @@ for filename in glob.glob(os.path.join(path, "*.sounddata")):
             if soundname != "" and not [soundname, filename] in soundlinks:
                 soundlinks.append([soundname, filename])
             elif [soundname, filename] in soundlinks:
-                print "\tDuplicate Sound entry: " + soundname + " in " + filename
+                print("\tDuplicate Sound entry: " + soundname + " in " + filename)
         elif line.strip().startswith("fileName "):
             soundfile = line.replace("fileName", "").replace('"', "").strip()
             if soundfile != "" and not [soundfile, filename] in soundfilelinks:
                 soundfilelinks.append([soundfile, filename])
 
     if i != 0 and itemCount != i:
-        print "\tIncorrect Count: " + filename
-        print "\t\tNumEffects: " + str(itemCount) + ", Effect: " + str(i)
+        print("\tIncorrect Count: " + filename)
+        print("\t\tNumEffects: " + str(itemCount) + ", Effect: " + str(i))
 
 basegameinfo = os.path.join(basegameplaintext, "GameInfo")
 basesoundlinks = []
@@ -1203,17 +1215,17 @@ for filename in glob.glob(os.path.join(basegameinfo, "*.sounddata")):
             if soundname != "" and not [soundname, filename] in basesoundlinks:
                 basesoundlinks.append([soundname, filename])
             elif [soundname, filename] in basesoundlinks:
-                print "\tDuplicate Sound entry: " + soundname + " in " + filename
+                print("\tDuplicate Sound entry: " + soundname + " in " + filename)
         elif line.strip().startswith("fileName "):
             soundfile = line.replace("fileName", "").replace('"', "").strip()
             if soundfile != "" and not [soundfile, filename] in soundfilelinks:
                 soundfilelinks.append([soundfile, filename])
 
     if i != 0 and itemCount != i:
-        print "\tIncorrect Count: " + filename
-        print "\t\tNumEffects: " + str(itemCount) + ", Effect: " + str(i)
+        print("\tIncorrect Count: " + filename)
+        print("\t\tNumEffects: " + str(itemCount) + ", Effect: " + str(i))
 
-print "** Reviewing Skybox Counts **"
+print("** Reviewing Skybox Counts **")
 for filename in glob.glob(os.path.join(path, "*.skyboxbackdropdata")):
     i = 0
     itemCount = 0
@@ -1252,10 +1264,10 @@ for filename in glob.glob(os.path.join(path, "*.skyboxbackdropdata")):
                 texturelist.append([brushfilename, filename])
 
     if i != 0 and itemCount != i:
-        print "\t" + filename
-        print "\t\tnumProperties: " + str(itemCount) + ", Properties: " + str(i)
+        print("\t" + filename)
+        print("\t\tnumProperties: " + str(itemCount) + ", Properties: " + str(i))
 
-print "** Reviewing Asteroid Counts **"
+print("** Reviewing Asteroid Counts **")
 for filename in glob.glob(os.path.join(path, "*.asteroidDef")):
     i = 0
     itemCount = 0
@@ -1276,10 +1288,10 @@ for filename in glob.glob(os.path.join(path, "*.asteroidDef")):
                 meshlist.append([meshname, filename])
 
     if i != 0 and itemCount != i:
-        print "\t" + filename
-        print "\t\tmeshGroupCount: " + str(itemCount) + ", meshGroup: " + str(i)
+        print("\t" + filename)
+        print("\t\tmeshGroupCount: " + str(itemCount) + ", meshGroup: " + str(i))
 
-print "** Reviewing Galaxy Scenario **"
+print("** Reviewing Galaxy Scenario **")
 for filename in glob.glob(os.path.join(path, "*.galaxyScenarioDef")):
     plaintextpath = os.path.join(basegameplaintext, "GameInfo")
     starTypeCount = 0
@@ -1348,37 +1360,37 @@ for filename in glob.glob(os.path.join(path, "*.galaxyScenarioDef")):
                 stringlist.append([stringname, filename])
 
     if starType != 0 and starTypeCount != starType:
-        print "\t\tGalaxyScenarioDef: (starTypeCount: " + str(
+        print("\t\tGalaxyScenarioDef: (starTypeCount: " + str(
             starTypeCount
-        ) + ", starType: " + str(starType) + ")"
+        ) + ", starType: " + str(starType) + ")")
     if planetType != 0 and planetTypeCount != planetType:
-        print "\t\tGalaxyScenarioDef: (planetTypeCount: " + str(
+        print("\t\tGalaxyScenarioDef: (planetTypeCount: " + str(
             planetTypeCount
-        ) + ", planetType: " + str(planetType) + ")"
+        ) + ", planetType: " + str(planetType) + ")")
     if orbitBodyType != 0 and orbitBodyTypeCount != orbitBodyType:
-        print "\t\tGalaxyScenarioDef: (orbitBodyTypeCount: " + str(
+        print("\t\tGalaxyScenarioDef: (orbitBodyTypeCount: " + str(
             orbitBodyTypeCount
-        ) + ", orbitBodyType: " + str(orbitBodyType) + ")"
+        ) + ", orbitBodyType: " + str(orbitBodyType) + ")")
     if planetItemType != 0 and planetItemTypeCount != planetItemType:
-        print "\t\tGalaxyScenarioDef: (planetItemTypeCount: " + str(
+        print("\t\tGalaxyScenarioDef: (planetItemTypeCount: " + str(
             planetItemTypeCount
-        ) + ", planetItemType: " + str(planetItemType) + ")"
+        ) + ", planetItemType: " + str(planetItemType) + ")")
     if playerType != 0 and playerTypeCount != playerType:
-        print "\t\tGalaxyScenarioDef: (playerTypeCount: " + str(
+        print("\t\tGalaxyScenarioDef: (playerTypeCount: " + str(
             playerTypeCount
-        ) + ", playerType: " + str(playerType) + ")"
+        ) + ", playerType: " + str(playerType) + ")")
     if planetItemsTemplate != 0 and planetItemsTemplateCount != planetItemsTemplate:
-        print "\t\tGalaxyScenarioDef: (planetItemsTemplateCount: " + str(
+        print("\t\tGalaxyScenarioDef: (planetItemsTemplateCount: " + str(
             planetItemsTemplateCount
-        ) + ", planetItemsTemplate: " + str(planetItemsTemplate) + ")"
+        ) + ", planetItemsTemplate: " + str(planetItemsTemplate) + ")")
     if pictureGroup != 0 and validPictureGroups != pictureGroup:
-        print "\t\tGalaxyScenarioDef: (validPictureGroups: " + str(
+        print("\t\tGalaxyScenarioDef: (validPictureGroups: " + str(
             validPictureGroups
-        ) + ", pictureGroup: " + str(pictureGroup) + ")"
+        ) + ", pictureGroup: " + str(pictureGroup) + ")")
     if themeGroup != 0 and validThemeGroups != themeGroup:
-        print "\t\tGalaxyScenarioDef: (validThemeGroups: " + str(
+        print("\t\tGalaxyScenarioDef: (validThemeGroups: " + str(
             validThemeGroups
-        ) + ", themeGroup: " + str(themeGroup) + ")"
+        ) + ", themeGroup: " + str(themeGroup) + ")")
 
 for filename in glob.glob(os.path.join(path, "*")):
     if not filename.endswith(".entity"):
@@ -1421,7 +1433,7 @@ for filename in glob.glob(os.path.join(path, "*")):
     sound = os.path.basename(filename).lower()
     soundfiles.append(sound)
 
-print "** Reviewing String Counts **"
+print("** Reviewing String Counts **")
 path = os.path.join(rootpath, "String")
 stringids = []
 basestringids = []
@@ -1436,11 +1448,11 @@ for filename in glob.glob(os.path.join(path, "*")):
         elif 'ID "' in line:
             stringval = line.replace('ID "', "").replace('"', "").strip()
             if not stringval.startswith("IDS_TAUNT") and stringval in stringids:
-                print "\tDuplicate string in english.str: " + stringval
+                print("\tDuplicate string in english.str: " + stringval)
             stringids.append(stringval)
     if i != 0 and itemCount != i:
-        print "\t" + filename
-        print "\t\tNumStrings: " + str(itemCount) + ", StringInfo: " + str(i)
+        print("\t" + filename)
+        print("\t\tNumStrings: " + str(itemCount) + ", StringInfo: " + str(i))
 path = os.path.join(basegameplaintext, "String")
 for filename in glob.glob(os.path.join(path, "*")):
     i = 0
@@ -1453,13 +1465,13 @@ for filename in glob.glob(os.path.join(path, "*")):
         elif 'ID "' in line:
             stringval = line.replace('ID "', "").replace('"', "").strip()
             if not stringval.startswith("IDS_TAUNT") and stringval in basestringids:
-                print "\tDuplicate string in english.str: " + stringval
+                print("\tDuplicate string in english.str: " + stringval)
             basestringids.append(stringval)
     if i != 0 and itemCount != i:
-        print "\t" + filename
-        print "\t\tNumStrings: " + str(itemCount) + ", StringInfo: " + str(i)
+        print("\t" + filename)
+        print("\t\tNumStrings: " + str(itemCount) + ", StringInfo: " + str(i))
 
-print "** Reviewing Mesh Counts **"
+print("** Reviewing Mesh Counts **")
 meshnames = []
 path = os.path.join(rootpath, "Mesh")
 
@@ -1567,14 +1579,14 @@ def readMesh(filename):
                 texturelist.append([brushfilename, filename])
 
     if p != 0 and NumPoints != p:
-        print "\t" + filename
-        print "\t\tNumPoints: " + str(NumPoints) + ", Points: " + str(p)
+        print("\t" + filename)
+        print("\t\tNumPoints: " + str(NumPoints) + ", Points: " + str(p))
     if v != 0 and NumVertices != v:
-        print "\t" + filename
-        print "\t\tNumVertices: " + str(NumVertices) + ", Vertexs: " + str(v)
+        print("\t" + filename)
+        print("\t\tNumVertices: " + str(NumVertices) + ", Vertexs: " + str(v))
     if t != 0 and NumTriangles != t:
-        print "\t" + filename
-        print "\t\tNumTriangles: " + str(NumTriangles) + ", Triangles: " + str(t)
+        print("\t" + filename)
+        print("\t\tNumTriangles: " + str(NumTriangles) + ", Triangles: " + str(t))
 
 
 for filename in meshlist:
@@ -1584,14 +1596,17 @@ for filename in meshlist:
     if os.path.exists(os.path.join(modpath, filename)):
         readMesh(os.path.join(modpath, filename))
     elif os.path.exists(os.path.join(meshpath, filename)):
-        readMesh(os.path.join(meshpath, filename))
+        try:
+            readMesh(os.path.join(meshpath, filename))
+        except:
+            pass
     else:
-        print ("Can't Find: " + filename)
+        print(("Can't Find: " + filename))
 
 # for filename in glob.glob(os.path.join(path, "*")):
 #    readMesh(filename)
 
-print "** Reviewing Mesh Sizes **"
+print("** Reviewing Mesh Sizes **")
 mainmesh = []
 for group in meshgroup:
     if not "Cosmetic" in group.get("entity"):
@@ -1625,32 +1640,32 @@ for group in meshgroup:
                         if shieldradius and "Planet" not in group.get("entity"):
                             shield = str(int((shieldradius / unitradius) * 100)) + "%"
                             if shieldradius > 1.5 * unitradius:
-                                print (
+                                print((
                                     "\tOversized Shield: "
                                     + group.get("entity")
                                     + " has a unitsize of "
                                     + str(unitradius)
                                     + " with a shieldsize of "
                                     + str(shieldradius)
-                                )
+                                ))
                             elif unitradius > shieldradius:
-                                print (
+                                print((
                                     "\tUndersized Shield: "
                                     + group.get("entity")
                                     + " has a unitsize of "
                                     + str(unitradius)
                                     + " with a shieldsize of "
                                     + str(shieldradius)
-                                )
+                                ))
                     else:
-                        print ("\tCan't find " + shieldfile)
+                        print(("\tCan't find " + shieldfile))
                     # mainmesh.append({'size': int(round(unitradius * 2)), 'entity': group.get('entity'), 'shield': shield})
                     break
 meshgroupsize = sorted(mainmesh, key=lambda k: k["size"], reverse=True)
 for group in meshgroupsize:
-    print (
+    print((
         str(group.get("size")) + "\t" + group.get("entity") + "\t" + group.get("shield")
-    )
+    ))
 
 
 print ("** Reviewing Squadrons **")
@@ -1671,11 +1686,11 @@ for filename in squadentities:
                     commandpoints = float(line.strip().split()[1].replace('"', ""))
                     if commandpoints > squadcount and squadcount != 4:
                         entity = os.path.basename(filename)
-                        print entity + " Frigate has " + str(
+                        print(entity + " Frigate has " + str(
                             commandpoints
                         ) + " Command Points but only " + str(
                             squadcount
-                        ) + " squads defined."
+                        ) + " squads defined.")
                     elif commandpoints > 0 and filename not in hangarpoints:
                         hangarpoints.append(filename)
                     break
@@ -1684,11 +1699,11 @@ for filename in squadentities:
                     commandpoints = float(line.strip().split()[1].replace('"', ""))
                     if commandpoints > squadcount and squadcount != 4:
                         entity = os.path.basename(filename)
-                        print entity + " Frigate has " + str(
+                        print(entity + " Frigate has " + str(
                             commandpoints
                         ) + " Command Points but only " + str(
                             squadcount
-                        ) + " squads defined."
+                        ) + " squads defined.")
                     elif commandpoints > 0 and filename not in hangarpoints:
                         hangarpoints.append(filename)
                     break
@@ -1711,7 +1726,7 @@ for filename in hangarpoints:
                     if not os.path.exists(mpath):
                         mpath = os.path.join(basegameplaintext, "Mesh", meshname + ".mesh")
                     if not os.path.exists(mpath):
-                        print("Can't find %s.mesh" % meshname)
+                        print(("Can't find %s.mesh" % meshname))
                         continue
                     i = 0
                     for meshline in open(mpath):
@@ -1719,20 +1734,20 @@ for filename in hangarpoints:
                             i = i+1
                     # print("%s: %d" % (meshname, i))
                     if i == 0:
-                        print(meshname + ".mesh does not contain a hangar point, but an entity lists squads")
+                        print((meshname + ".mesh does not contain a hangar point, but an entity lists squads"))
 
     if not meshname:
-        print("No mesh found for %s" % filename)  
+        print(("No mesh found for %s" % filename))  
 
 
-print "** Reviewing Textures **"
+print("** Reviewing Textures **")
 path = os.path.join(rootpath, "Textures")
 textures = []
 textures2 = []
 for filename in glob.glob(os.path.join(path, "*")):
     texfile = os.path.basename(filename)
     if texfile in textures:
-        print "\tDuplicate Texture (dds & tga): " + filename
+        print("\tDuplicate Texture (dds & tga): " + filename)
     else:
         if not texfile in textures and not texfile in meshnames:
             textures.append(texfile)
@@ -1773,20 +1788,20 @@ for entity in entitylinked:
         not str(entity[0] + ".entity").lower() in entitymanlc
         and entity[0] not in duplicateentity
     ):
-        print "\tEntity not referenced in the entity.manifest: " + entity[0]
+        print("\tEntity not referenced in the entity.manifest: " + entity[0])
 
 if not verbose:
-    print "** Reviewing File Formats **"
+    print("** Reviewing File Formats **")
     if len(binfiles) > 0:
-        print "\tUnable to read " + str(len(binfiles)) + " Binary Files"
+        print("\tUnable to read " + str(len(binfiles)) + " Binary Files")
 else:
-    print "\n***** Possible Unused Files ****\n"
+    print("\n***** Possible Unused Files ****\n")
 
-    print "** Binary Files - Unable to read **"
+    print("** Binary Files - Unable to read **")
     for item in binfiles:
-        print "\tBinary File: " + item
+        print("\tBinary File: " + item)
 
-    print "** Entities Not Referenced **"
+    print("** Entities Not Referenced **")
     entitylist.sort()
     entitymanifest.sort()
     for entity in entitylist:
@@ -1796,11 +1811,11 @@ else:
         ):
             lcentitymanifest = {et.lower() for et in entitymanifest}
             if entity.lower() not in lcentitymanifest:
-                print "\tEntity not referenced in the entity.manifest: " + entity
+                print("\tEntity not referenced in the entity.manifest: " + entity)
             else:
-                print "\tEntity Case Sensitive conflict in entity.manifest: " + entity
+                print("\tEntity Case Sensitive conflict in entity.manifest: " + entity)
 
-    print "** Particles Not Referenced **"
+    print("** Particles Not Referenced **")
     for item in particlefiles:
         test = False
         for listitem in particlelist:
@@ -1810,9 +1825,9 @@ else:
                 test = True
                 break
         if not test:
-            print "\tParticle not referenced by an Entity: " + item
+            print("\tParticle not referenced by an Entity: " + item)
 
-    print "** Meshes Not Referenced **"
+    print("** Meshes Not Referenced **")
     for item in meshfiles:
         test = False
         for listitem in meshlist:
@@ -1822,11 +1837,11 @@ else:
                 test = True
                 break
         if not test:
-            print "\tMeshes not referenced: " + item
+            print("\tMeshes not referenced: " + item)
 
     texturelist.sort(key=lambda x: x[0])
 
-    print "** Textures Not Referenced **"
+    print("** Textures Not Referenced **")
     for tex in textures2:
         # Base game defaults
         if (
@@ -1851,9 +1866,9 @@ else:
                 test = True
                 break
         if not test:
-            print "\tTexture not referenced in a plain text game file: " + tex
+            print("\tTexture not referenced in a plain text game file: " + tex)
 
-    print "** Bruses Not Referenced **"
+    print("** Bruses Not Referenced **")
     brushignore = ["GAMELOGO_OPENING", "IRONCLADLOGO", "STARDOCKLOGO", "DiplomacyLogo"]
     for brush in brushentries:
         test = False
@@ -1862,11 +1877,11 @@ else:
                 test = True
                 break
         if not test:
-            print "\tBrush not referenced in a plain text game file: " + brush[0]
+            print("\tBrush not referenced in a plain text game file: " + brush[0])
             pass
 
 if buildman:
-    print "\n** Write entity.manifest **"
+    print("\n** Write entity.manifest **")
     entitywrite = []
     for entity in entitylinked:
         if (
@@ -1882,9 +1897,9 @@ if buildman:
         file.write('entityName "' + entity + '"\n')
     file.close()
 
-print "\n***** Invalid Entries Check *****"
+print("\n***** Invalid Entries Check *****")
 
-print "** Referenced Non-existant Entity **"
+print("** Referenced Non-existant Entity **")
 for entity in entitymanifest:
     test = False
     for listitem in entitylist:
@@ -1892,10 +1907,10 @@ for entity in entitymanifest:
             test = True
             break
     if not test and not entity.lower() in basegameentites:
-        print '\t"' + entity + '"' + " listed in the entity.manifest does not appear to exist."
+        print('\t"' + entity + '"' + " listed in the entity.manifest does not appear to exist.")
 
 
-print "** Referenced Non-existant Textures **"
+print("** Referenced Non-existant Textures **")
 for tex in texturelist:
     extension = os.path.splitext(tex[0])
     test = False
@@ -1928,9 +1943,9 @@ for tex in texturelist:
                     test = True
                     break
             if not test:
-                print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]).replace(
+                print('\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]).replace(
                     rootpath, ""
-                ) + '" does not appear to exist in ' + dirstr + " folder."
+                ) + '" does not appear to exist in ' + dirstr + " folder.")
     else:
         for file in textures2:
             file = os.path.splitext(file)[0]
@@ -1942,11 +1957,11 @@ for tex in texturelist:
             and not tex[0].lower().replace(".tga", "").replace(".dds", "")
             in basegametextures
         ):
-            print '\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]).replace(
+            print('\t"' + str(tex[0]) + '"' + ' listed in "' + str(tex[1]).replace(
                 rootpath, ""
-            ) + '" does not appear to exist in ' + dirstr + " folder."
+            ) + '" does not appear to exist in ' + dirstr + " folder.")
 
-print "** Referenced Non-existant String **"
+print("** Referenced Non-existant String **")
 for string in stringlist:
     test = False
     for itemlist in stringids:
@@ -1959,11 +1974,11 @@ for string in stringlist:
                 test = True
                 break
     if not test:
-        print '\t"' + str(string[0]) + '"' + ' listed in "' + str(string[1]).replace(
+        print('\t"' + str(string[0]) + '"' + ' listed in "' + str(string[1]).replace(
             rootpath, ""
-        ) + '" does not appear to exist in English.str.'
+        ) + '" does not appear to exist in English.str.')
 
-print "** Referenced Non-existant Mesh **"
+print("** Referenced Non-existant Mesh **")
 for mesh in meshlist:
     meshval = mesh[0].lower().replace(".mesh", "")
     test = False
@@ -1972,12 +1987,12 @@ for mesh in meshlist:
             test = True
             break
     if not test and meshval not in basegamemeshes:
-        print '\t"' + str(mesh[0]) + '"' + ' listed in "' + str(mesh[1]).replace(
+        print('\t"' + str(mesh[0]) + '"' + ' listed in "' + str(mesh[1]).replace(
             rootpath, ""
-        ) + '" does not appear to exist in Mesh folder.'
+        ) + '" does not appear to exist in Mesh folder.')
 
 
-print "** Referenced Non-existant Sounddata **"
+print("** Referenced Non-existant Sounddata **")
 for sound in soundlist:
     test = False
     for itemlist in soundlinks:
@@ -1990,12 +2005,12 @@ for sound in soundlist:
                 test = True
                 break
     if not test:
-        print '\t"' + str(sound[0]) + '"' + ' listed in "' + str(sound[1]).replace(
+        print('\t"' + str(sound[0]) + '"' + ' listed in "' + str(sound[1]).replace(
             rootpath, ""
-        ) + '" does not have a sounddata entry.'
+        ) + '" does not have a sounddata entry.')
 
 
-print "** Referenced Non-existant Sound **"
+print("** Referenced Non-existant Sound **")
 for sound in soundfilelinks:
     test = False
     for itemlist in soundfiles:
@@ -2003,11 +2018,11 @@ for sound in soundfilelinks:
             test = True
             break
     if not test and not sound[0].lower() in basegamesounds:
-        print '\t"' + str(sound[0]) + '"' + ' listed in "' + str(sound[1]).replace(
+        print('\t"' + str(sound[0]) + '"' + ' listed in "' + str(sound[1]).replace(
             rootpath, ""
-        ) + '" does not appear to exist in Sound folder.'
+        ) + '" does not appear to exist in Sound folder.')
 
-print "** Referenced Non-existant Particle **"
+print("** Referenced Non-existant Particle **")
 for item in particlelist:
     test = False
     for itemlist in particlefiles:
@@ -2015,11 +2030,11 @@ for item in particlelist:
             test = True
             break
     if not test and not item[0].lower() in basegameparticles:
-        print '\t"' + str(item[0]) + '"' + ' listed in "' + str(item[1]).replace(
+        print('\t"' + str(item[0]) + '"' + ' listed in "' + str(item[1]).replace(
             rootpath, ""
-        ) + '" does not appear to exist in Particle folder.'
+        ) + '" does not appear to exist in Particle folder.')
 
-print "** Referenced Non-existant Brush **"
+print("** Referenced Non-existant Brush **")
 for item in brushlist:
     test = False
     for itemlist in brushentries:
@@ -2027,15 +2042,15 @@ for item in brushlist:
             test = True
             break
     if not test:
-        print '\t"' + str(item[0]) + '"' + ' listed in "' + str(item[1]).replace(
+        print('\t"' + str(item[0]) + '"' + ' listed in "' + str(item[1]).replace(
             rootpath, ""
-        ) + '" does not appear to exist in a Brush file.'
+        ) + '" does not appear to exist in a Brush file.')
 
 
 if verbose and basegame:
-    print "\n*** Unnecessary File Check (Dups with Base) ***"
+    print("\n*** Unnecessary File Check (Dups with Base) ***")
     if not skipbin:
-        print "\tNote: this process may create a temporary file to properly compare a game binary."
+        print("\tNote: this process may create a temporary file to properly compare a game binary.")
     baseDup("Textures")
     baseDup("Sound")
     baseDup("Mesh")
@@ -2046,7 +2061,7 @@ if verbose and basegame:
 
 
 if graph:
-    print "*** Writing Graph Files ***"
+    print("*** Writing Graph Files ***")
     file = open("graphedges.txt", "w")
     # file.write('From Type, From Name, Edge, To Type, To Name, Weight\n')
     for item in particlelist:
@@ -2108,4 +2123,4 @@ if graph:
         file.write("Entity, " + os.path.basename(os.path.splitext(str(item))[0]) + "\n")
     file.close()
 
-print "*** Completed ***"
+print("*** Completed ***")
