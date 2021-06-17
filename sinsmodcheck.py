@@ -7,7 +7,7 @@ import sys
 import hashlib
 import subprocess
 
-basegameplaintext = os.path.expanduser("C:\Program Files (x86)\Steam\steamapps\common\Sins of a Solar Empire Rebellion")
+basegameplaintext = os.path.expanduser("~/Documents/workspace/SinsRef/Rebellion194")
 version = "1.17"
 verbose = False
 graph = False
